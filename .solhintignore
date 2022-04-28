@@ -1,1 +1,1 @@
-contracts/interfaces/IDeBridgeGate.sol
+contracts/interfaces/IXDCBridgeGate.sol

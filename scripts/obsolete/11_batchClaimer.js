@@ -1,10 +1,10 @@
 const { FLAGS, deployProxy, getLastDeployedProxy, waitTx } = require("../deploy-utils");
-const debridgeInitParams = require("../../assets/debridgeInitParams");
+const xbridgeInitParams = require("../../assets/xbridgeInitParams");
 
 module.exports = async function({getNamedAccounts, deployments, network}) {
   const { deployer } = await getNamedAccounts();
 
-  const deployInitParams = debridgeInitParams[network.name];
+  const deployInitParams = xbridgeInitParams[network.name];
   if (!deployInitParams) return;
 
   if(deployInitParams.deploy.Claimer){
@@ -13,8 +13,8 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
     console.log(`\tfrom DEPLOYER ${deployer}`);
     console.log('*'.repeat(80));
 
-    //No deployed proxy found for "DeBridgeGate"
-    const deBridgeGate = await getLastDeployedProxy("DeBridgeGate", deployer);
+    //No deployed proxy found for "XDCBridgeGate"
+    const deBridgeGate = await getLastDeployedProxy("XDCBridgeGate", deployer);
     await deployProxy("Claimer", deployer,
     //["0x68d936cb4723bdd38c488fd50514803f96789d2d"],
     [deBridgeGate.address],

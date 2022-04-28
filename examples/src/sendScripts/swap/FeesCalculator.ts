@@ -1,6 +1,6 @@
 import BN from "bn.js";
-import { DeBridgeGate } from "../../../../typechain-types-web3/DeBridgeGate";
-import getDebridgeId from "./getDebridgeId";
+import { XDCBridgeGate } from "../../../../typechain-types-web3/XDCBridgeGate";
+import getXbridgeId from "./getXbridgeId";
 import {Web3RpcUrl} from "../constants";
 import {toWei} from "web3-utils";
 import {AddressZero} from "@ethersproject/constants";
@@ -11,8 +11,8 @@ export default class FeesCalculator {
     constructor(
         private readonly amountToSend: BN,
         private readonly tokenToSend: string,
-        private readonly deBridgeGateTo: DeBridgeGate,
-        private readonly deBridgeGateFrom: DeBridgeGate,
+        private readonly deBridgeGateTo: XDCBridgeGate,
+        private readonly deBridgeGateFrom: XDCBridgeGate,
         private readonly CHAIN_ID_TO: keyof typeof Web3RpcUrl,
         private readonly CHAIN_ID_FROM: keyof typeof Web3RpcUrl,
     ) {
@@ -47,22 +47,22 @@ export default class FeesCalculator {
     }
 
 
-    public async getChainFeeForDebridgeId(): Promise<BN> {
-        const deBridgeId = await getDebridgeId(
+    public async getChainFeeForXbridgeId(): Promise<BN> {
+        const deBridgeId = await getXbridgeId(
             this.deBridgeGateFrom,
             this.deBridgeGateTo,
             this.CHAIN_ID_FROM,
             this.tokenToSend
         );
         return new BN(
-            await this.deBridgeGateFrom.methods.getDebridgeChainAssetFixedFee(deBridgeId, this.CHAIN_ID_TO).call()
+            await this.deBridgeGateFrom.methods.getXbridgeChainAssetFixedFee(deBridgeId, this.CHAIN_ID_TO).call()
         );
     }
 
     public async getFeesToPayInNativeToken(): Promise<BN> {
         const transferFee = await this.getTransferFee();
         const executionFee = await this.getExecutionFee();
-        const chainFee = await this.getChainFeeForDebridgeId();
+        const chainFee = await this.getChainFeeForXbridgeId();
         const nativeFee = await this.getNativeFee();
 
         return this.isSendingNativeToken()

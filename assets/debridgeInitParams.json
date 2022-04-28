@@ -36,9 +36,9 @@
   "ropsten": {
     "deBridgeTokenAdmin": "0x852e7627aEFF3ed6105F600D985cC6f74DBd6640",
     "treasuryAddress": "0x852e7627aEFF3ed6105F600D985cC6f74DBd6640",
-    "minConfirmations": 0,
-    "confirmationThreshold": 0,
-    "excessConfirmations": 0,
+    "minConfirmations": 1,
+    "confirmationThreshold": 1,
+    "excessConfirmations": 1,
     "oracles": [
       "0x23c7d932dc43952e1b39b0f4d9e70e5f2e58abb9"
     ],

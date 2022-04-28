@@ -19,11 +19,11 @@ submissions count in current block
   uint40 public currentBlock;
 ```
 Current block
-## debridgeAddress
+## xbridgeAddress
 ```solidity
-  address public debridgeAddress;
+  address public xbridgeAddress;
 ```
-Debridge gate address
+Xbridge gate address
 
 # Functions
 ## initialize
@@ -76,19 +76,19 @@ Sets minimal required confirmations.
 | :--- | :--- | :------------------------------------------------------------------- |
 |`_confirmationThreshold` | uint8 | Confirmation info.
 
-## setDebridgeAddress
+## setXbridgeAddress
 ```solidity
-  function setDebridgeAddress(
-            address _debridgeAddress
+  function setXbridgeAddress(
+            address _xbridgeAddress
   ) external
 ```
 
-Sets core debridge conrtact address.
+Sets core xbridge conrtact address.
 
 ### Parameters:
 | Name | Type | Description                                                          |
 | :--- | :--- | :------------------------------------------------------------------- |
-|`_debridgeAddress` | address | Debridge address.
+|`_xbridgeAddress` | address | Xbridge address.
 
 ## isValidSignature
 ```solidity

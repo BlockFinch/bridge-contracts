@@ -3,7 +3,7 @@ const { deployProxy, getLastDeployedProxy } = require("../deploy-utils");
 module.exports = async function ({ getNamedAccounts, deployments, network }) {
   const { deployer } = await getNamedAccounts();
 
-  const deBridgeGate = await getLastDeployedProxy("DeBridgeGate", deployer);
+  const deBridgeGate = await getLastDeployedProxy("XDCBridgeGate", deployer);
   await deployProxy(
     "FeesCalculator",
     deployer,
@@ -13,4 +13,4 @@ module.exports = async function ({ getNamedAccounts, deployments, network }) {
 };
 
 module.exports.tags = ["FeesCalculator"]
-module.exports.dependencies = ['01-0_DeBridgeGate'];
+module.exports.dependencies = ['01-0_XDCBridgeGate'];

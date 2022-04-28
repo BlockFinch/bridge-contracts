@@ -124,7 +124,7 @@
 - [ ] with correct signature
 - [ ] without correct signature
 
-## Test Item: FullDebridge
+## Test Item: FullXbridge
 
 ### General requirements
 
@@ -348,7 +348,7 @@
 - [ ] swap native asset
 - [ ] swap token
 
-## Test Item: LightDebridge
+## Test Item: LightXbridge
 
 ### General requirements
 

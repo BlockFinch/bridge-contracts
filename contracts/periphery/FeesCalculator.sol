@@ -5,7 +5,7 @@ import "@openzeppelin/contracts-upgradeable/interfaces/IERC20MetadataUpgradeable
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
-import "../transfers/DeBridgeGate.sol";
+import "../transfers/XDCBridgeGate.sol";
 
 contract FeesCalculator is
     Initializable,
@@ -17,7 +17,7 @@ contract FeesCalculator is
     // used to express relative values (fees)
     uint256 public constant BPS_DENOMINATOR = 10000;
 
-    DeBridgeGate public gate; // debridge gate address
+    XDCBridgeGate public gate; // xbridge gate address
 
     /* ========== ERRORS ========== */
 
@@ -42,7 +42,7 @@ contract FeesCalculator is
     /* ========== CONSTRUCTOR  ========== */
 
     function initialize(
-        DeBridgeGate _gate
+        XDCBridgeGate _gate
     ) public initializer {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         gate = _gate;
@@ -89,15 +89,15 @@ contract FeesCalculator is
 
     /* ========== ADMIN ========== */
 
-    function setDeBridgeGate(DeBridgeGate _gate) external onlyAdmin {
+    function setXDCBridgeGate(XDCBridgeGate _gate) external onlyAdmin {
         gate = _gate;
     }
 
     /* ========== INTERNAL ========== */
 
-    function getDebridgeId(
+    function getXbridgeId(
         address _tokenAddress
-    ) internal view returns (bytes32 debridgeId) {
+    ) internal view returns (bytes32 xbridgeId) {
         (uint256 nativeChainId, bytes memory nativeAddress) = gate.getNativeInfo(_tokenAddress);
 
         bool isNativeToken = nativeChainId  == 0
@@ -105,18 +105,18 @@ contract FeesCalculator is
             : nativeChainId == gate.getChainId(); // token native chain id the same
 
         if (isNativeToken) {
-            //We use WETH debridgeId for transfer ETH
-            debridgeId = gate.getDebridgeId(
+            //We use WETH xbridgeId for transfer ETH
+            xbridgeId = gate.getXbridgeId(
                 gate.getChainId(),
                 _tokenAddress == address(0) ? address(gate.weth()) : _tokenAddress
             );
         } else {
-            debridgeId = gate.getbDebridgeId(
+            xbridgeId = gate.getbXbridgeId(
                 nativeChainId,
                 nativeAddress
             );
         }
-        return debridgeId;
+        return xbridgeId;
     }
 
     function _calculateProtocolFees(
@@ -134,7 +134,7 @@ contract FeesCalculator is
             bool chainIsSupported,
             uint16 chainTransferFeeBps
         ) = gate.getChainToConfig(_chainIdTo);
-        if (!chainIsSupported) revert DeBridgeGate.WrongChainTo();
+        if (!chainIsSupported) revert XDCBridgeGate.WrongChainTo();
 
         (uint16 discountFixBps, uint16 discountTransferBps) = gate.feeDiscount(_sender);
 
@@ -146,9 +146,9 @@ contract FeesCalculator is
             }
             else {
                 // calculate fixed asset fee for ERC20 tokens
-                bytes32 debridgeId = getDebridgeId(_tokenAddress);
-                fixFee = gate.getDebridgeChainAssetFixedFee(debridgeId, _chainIdTo);
-                if (fixFee == 0) revert DeBridgeGate.NotSupportedFixedFee();
+                bytes32 xbridgeId = getXbridgeId(_tokenAddress);
+                fixFee = gate.getXbridgeChainAssetFixedFee(xbridgeId, _chainIdTo);
+                if (fixFee == 0) revert XDCBridgeGate.NotSupportedFixedFee();
             }
         } else {
             // calculate native asset fee

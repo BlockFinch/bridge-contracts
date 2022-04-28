@@ -8,11 +8,11 @@ import { expect } from 'chai';
 import { test } from 'mocha';
 import { ethers, upgrades } from 'hardhat';
 import { before } from 'mocha';
-import DeBridgeGateJson from '../artifacts/contracts/transfers/DeBridgeGate.sol/DeBridgeGate.json';
-import { DeBridgeGate, ERC20, SimpleFeeProxy } from '../typechain-types';
+import XDCBridgeGateJson from '../artifacts/contracts/transfers/XDCBridgeGate.sol/XDCBridgeGate.json';
+import { XDCBridgeGate, ERC20, SimpleFeeProxy } from '../typechain-types';
 import expectStubFunctionIsCalledWith from './utils/expectStubFunctionIsCalledWith';
 
-type DeBridgeGateMock = MockContract & {mock: { [K in keyof DeBridgeGate['functions']]: Stub }};
+type XDCBridgeGateMock = MockContract & {mock: { [K in keyof XDCBridgeGate['functions']]: Stub }};
 type ERC20Mock = MockContract & {mock: { [K in keyof ERC20['functions']]: Stub }};
 
 let simpleFeeProxyFactory: ContractFactory;
@@ -28,7 +28,7 @@ let newAdmin: SignerWithAddress;
 let CHAIN_ID: number;
 let DEFAULT_ADMIN_ROLE: string;
 
-let deBridgeGateMock: DeBridgeGateMock;
+let deBridgeGateMock: XDCBridgeGateMock;
 let erc20Mock: ERC20Mock;
 let NATIVE_ADDRESS: Bytes;
 
@@ -45,7 +45,7 @@ beforeEach(async () => {
     await erc20Mock.mock.balanceOf.returns(0 as any);
     await erc20Mock.mock.transfer.returns(true as any);
 
-    deBridgeGateMock = await deployMockContract(deployer, DeBridgeGateJson.abi) as DeBridgeGateMock;
+    deBridgeGateMock = await deployMockContract(deployer, XDCBridgeGateJson.abi) as XDCBridgeGateMock;
     await deBridgeGateMock.mock.getNativeInfo
         .withArgs(erc20Mock.address)
         .returns(CHAIN_ID, NATIVE_ADDRESS);
@@ -174,7 +174,7 @@ describe('onlyAdmin functions', () => {
         const protectedFunctions = [
             async () => {await simpleFeeProxyConnected.pause()},
             async () => {await simpleFeeProxyConnected.unpause()},
-            async () => {await simpleFeeProxyConnected.setDebridgeGate(deBridgeGateMock.address)},
+            async () => {await simpleFeeProxyConnected.setXbridgeGate(deBridgeGateMock.address)},
             async () => {await simpleFeeProxyConnected.setTreasury(treasury.address)},
         ];
 

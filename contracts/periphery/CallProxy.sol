@@ -33,7 +33,7 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
 
     /* ========== ERRORS ========== */
 
-    error DeBridgeGateBadRole();
+    error XDCBridgeGateBadRole();
 
     error ExternalCallFailed();
     error NotEnoughSafeTxGas();
@@ -43,7 +43,7 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
     /* ========== MODIFIERS ========== */
 
     modifier onlyGateRole() {
-        if (!hasRole(DEBRIDGE_GATE_ROLE, msg.sender)) revert DeBridgeGateBadRole();
+        if (!hasRole(DEBRIDGE_GATE_ROLE, msg.sender)) revert XDCBridgeGateBadRole();
         _;
     }
 

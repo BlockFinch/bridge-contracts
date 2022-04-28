@@ -37,7 +37,7 @@ if (!isKeyOfWeb3Rpc(chainIdFrom)){
 }
 
 if (chainIdTo !== ChainId.KOVAN) {
-    logger.error(`--chain-id-to must be ${ChainId.KOVAN}. This example allows sending to kovan only for now, because only this networks has both uniswap v2 and debridgeGate`);
+    logger.error(`--chain-id-to must be ${ChainId.KOVAN}. This example allows sending to kovan only for now, because only this networks has both uniswap v2 and xbridgeGate`);
     hasErrors = true;
 }
 

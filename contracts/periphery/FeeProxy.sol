@@ -9,7 +9,7 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "../interfaces/IUniswapV2Pair.sol";
 import "../interfaces/IUniswapV2Factory.sol";
 import "../interfaces/IFeeProxy.sol";
-import "../interfaces/IDeBridgeGate.sol";
+import "../interfaces/IXDCBridgeGate.sol";
 import "../interfaces/IWETH.sol";
 
 contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeable, IFeeProxy {
@@ -22,7 +22,7 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
 
     IWETH public weth; // wrapped native token contract
 
-    IDeBridgeGate public debridgeGate;
+    IXDCBridgeGate public xbridgeGate;
     IUniswapV2Factory public uniswapFactory;
 
     mapping(uint256 => bytes) public feeProxyAddresses; //Addresses of fee proxy addresses in each chain
@@ -79,8 +79,8 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
         uniswapFactory = _uniswapFactory;
     }
 
-    function setDebridgeGate(IDeBridgeGate _debridgeGate) external onlyAdmin {
-        debridgeGate = _debridgeGate;
+    function setXbridgeGate(IXDCBridgeGate _xbridgeGate) external onlyAdmin {
+        xbridgeGate = _xbridgeGate;
     }
 
     function setTreasury(uint256 _chainId, bytes memory _treasuryAddress) external onlyAdmin {
@@ -102,15 +102,15 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
         uint256 chainId = getChainId();
         if (treasuryAddresses[chainId].length == 0) revert EmptyTreasuryAddress(chainId);
 
-        (uint256 nativeChainId, bytes memory nativeAddress) = debridgeGate.getNativeInfo(
+        (uint256 nativeChainId, bytes memory nativeAddress) = xbridgeGate.getNativeInfo(
             _tokenAddress
         );
         if (feeProxyAddresses[nativeChainId].length == 0) revert EmptyFeeProxyAddress(nativeChainId);
 
-        bytes32 debridgeId = getbDebridgeId(nativeChainId, nativeAddress);
+        bytes32 xbridgeId = getbXbridgeId(nativeChainId, nativeAddress);
         address currentTreasuryAddress = toAddress(treasuryAddresses[chainId]);
 
-        debridgeGate.withdrawFee(debridgeId);
+        xbridgeGate.withdrawFee(xbridgeId);
         uint256 amount = IERC20Upgradeable(_tokenAddress).balanceOf(address(this));
         // original token chain is the same as contract chain
         if (chainId == nativeChainId) {
@@ -150,16 +150,16 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
     /// @dev Swap native tokens to deETH and then transfer reward to Ethereum network.
     function withdrawNativeFee() external payable override onlyWorker whenNotPaused {
         uint256 chainId = getChainId();
-        //DebridgeId of weth in ethereum network
+        //XbridgeId of weth in ethereum network
         //TODO: can be set as contstant
-        // (, bytes memory nativeAddress) = debridgeGate.getNativeTokenInfo(deEthToken);
+        // (, bytes memory nativeAddress) = xbridgeGate.getNativeTokenInfo(deEthToken);
         if (feeProxyAddresses[chainId].length == 0) revert EmptyFeeProxyAddress(chainId);
 
         // TODO: treasuryAddresses can keep only for ETH network
         // if (treasuryAddresses[chainId].length == 0) revert EmptyTreasuryAddress(chainId);
 
         // address currentTreasuryAddress = toAddress(treasuryAddresses[chainId]);
-        debridgeGate.withdrawFee(getDebridgeId(chainId, address(0)));
+        xbridgeGate.withdrawFee(getXbridgeId(chainId, address(0)));
         uint256 amount = address(this).balance - msg.value;
 
         //reward is native token (ETH/BNB/HT)
@@ -195,7 +195,7 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
     /// @dev Calculates asset identifier.
     /// @param _chainId Current chain id.
     /// @param _tokenAddress Address of the asset on the other chain.
-    function getbDebridgeId(uint256 _chainId, bytes memory _tokenAddress)
+    function getbXbridgeId(uint256 _chainId, bytes memory _tokenAddress)
         public
         pure
         returns (bytes32)
@@ -203,7 +203,7 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
         return keccak256(abi.encodePacked(_chainId, _tokenAddress));
     }
 
-    function getDebridgeId(uint256 _chainId, address _tokenAddress) public pure returns (bytes32) {
+    function getXbridgeId(uint256 _chainId, address _tokenAddress) public pure returns (bytes32) {
         return keccak256(abi.encodePacked(_chainId, _tokenAddress));
     }
 
@@ -216,8 +216,8 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
         uint256 _nativeChainId,
         uint256 _nativeFixFee
     ) private {
-        IERC20Upgradeable(_erc20Token).safeApprove(address(debridgeGate), _amount);
-        debridgeGate.send{value: _nativeFixFee}(
+        IERC20Upgradeable(_erc20Token).safeApprove(address(xbridgeGate), _amount);
+        xbridgeGate.send{value: _nativeFixFee}(
             _erc20Token,
             _amount,
             _nativeChainId, //_chainIdTo,

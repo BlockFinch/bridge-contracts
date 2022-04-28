@@ -1,20 +1,20 @@
-const debridgeInitParams = require("../../assets/debridgeInitParams");
+const xbridgeInitParams = require("../../assets/xbridgeInitParams");
 const { deployProxy, getLastDeployedProxy } = require("../deploy-utils");
 
 module.exports = async function ({ getNamedAccounts, deployments, network }) {
   const { deployer } = await getNamedAccounts();
-  const deployInitParams = debridgeInitParams[network.name];
+  const deployInitParams = xbridgeInitParams[network.name];
   if (!deployInitParams) return;
 
-  const deToken = (await deployments.get("DeBridgeToken")).address;
+  const deToken = (await deployments.get("XDCBridgeToken")).address;
 
   const wethAddress = deployInitParams.external.WETH || (await deployments.get("MockWeth")).address;
-  const deBridgeGateInstance = await getLastDeployedProxy("DeBridgeGate", deployer, [
+  const deBridgeGateInstance = await getLastDeployedProxy("XDCBridgeGate", deployer, [
     deployInitParams.excessConfirmations,
     wethAddress,
   ]);
 
-  await deployProxy("DeBridgeTokenDeployer", deployer,
+  await deployProxy("XDCBridgeTokenDeployer", deployer,
     [
       deToken,
       deployInitParams.deBridgeTokenAdmin,
@@ -23,5 +23,5 @@ module.exports = async function ({ getNamedAccounts, deployments, network }) {
     true);
 };
 
-module.exports.tags = ["01-2_DeBridgeTokenDeployer"]
-module.exports.dependencies = ['01-1_DeBridgeToken'];
+module.exports.tags = ["01-2_XDCBridgeTokenDeployer"]
+module.exports.dependencies = ['01-1_XDCBridgeToken'];

@@ -2,14 +2,14 @@
 pragma solidity 0.8.7;
 
 import "./BridgeAppBase.sol";
-import "./forkedInterfaces/IDeBridgeGate.sol";
+import "./forkedInterfaces/IXDCBridgeGate.sol";
 
 /// @dev Example contract to show how to send a simple message to another chain using deBridgeGate
 contract Incrementor is BridgeAppBase {
     uint256 public claimedTimes;
     using Flags for uint256;
 
-    function initialize(IDeBridgeGate _deBridgeGate) external initializer {
+    function initialize(IXDCBridgeGate _deBridgeGate) external initializer {
         __BridgeAppBase_init(_deBridgeGate);
         claimedTimes = 0;
     }
@@ -22,7 +22,7 @@ contract Incrementor is BridgeAppBase {
         address _fallback,
         uint256 _executionFee
     ) external virtual payable whenNotPaused {
-        IDeBridgeGate.SubmissionAutoParamsTo memory autoParams;
+        IXDCBridgeGate.SubmissionAutoParamsTo memory autoParams;
         autoParams.flags = autoParams.flags.setFlag(Flags.REVERT_IF_EXTERNAL_FAIL, true);
         autoParams.flags = autoParams.flags.setFlag(Flags.PROXY_WITH_SENDER, true);
         autoParams.executionFee = _executionFee;

@@ -1,6 +1,6 @@
 import {Logger} from "log4js";
 import Web3 from "web3";
-import {DeBridgeGate} from "../../../typechain-types-web3/DeBridgeGate";
+import {XDCBridgeGate} from "../../../typechain-types-web3/XDCBridgeGate";
 
 export type GateSendArguments = {
     tokenAddress: string, //address _tokenAddress,
@@ -17,8 +17,8 @@ export type TsSendArguments = {
     logger: Logger,
     web3: Web3,
     senderPrivateKey: string,
-    debridgeGateInstance: DeBridgeGate,
-    debridgeGateAddress: string,
+    xbridgeGateInstance: XDCBridgeGate,
+    xbridgeGateAddress: string,
     value: string,
     gateSendArguments: GateSendArguments,
 };
@@ -35,8 +35,8 @@ export default async function send({
     web3,
     senderPrivateKey,
     value,
-    debridgeGateInstance,
-    debridgeGateAddress,
+    xbridgeGateInstance,
+    xbridgeGateAddress,
     gateSendArguments
 }: TsSendArguments) {
     logger.info("Sending");
@@ -51,7 +51,7 @@ export default async function send({
 
     const gateSendArgumentsWithDefaults = {...gateSendDefaultNotRequiredValue, ...gateSendArguments};
     const gateSendArgValues = getSortedSendValues(gateSendArgumentsWithDefaults);
-    const sendMethod = debridgeGateInstance.methods.send(...gateSendArgValues);
+    const sendMethod = xbridgeGateInstance.methods.send(...gateSendArgValues);
 
     logger.info("Send method arguments", gateSendArgumentsWithDefaults);
     logger.info("Send method encodedABI", sendMethod.encodeABI());
@@ -61,7 +61,7 @@ export default async function send({
 
     const tx = {
             from: senderAddress,
-            to: debridgeGateAddress,
+            to: xbridgeGateAddress,
             gas: estimatedGas,
             value,
             gasPrice: gasPrice,
@@ -76,16 +76,16 @@ export default async function send({
     let result = await web3.eth.sendSignedTransaction(signedTx.rawTransaction as string);
     logger.info("Result", result);
 
-    const logs = result.logs.find(l=>l.address===debridgeGateAddress);
+    const logs = result.logs.find(l=>l.address===xbridgeGateAddress);
     const submissionId = logs?.data.substring(0, 66);
     logger.info(`SUBMISSION ID ${submissionId}`);
-    logger.info(`Url: https://testnet.debridge.finance/transaction?tx=${result.transactionHash}&chainId=${await web3.eth.getChainId()}`);
+    logger.info(`Url: https://testnet.xbridge.finance/transaction?tx=${result.transactionHash}&chainId=${await web3.eth.getChainId()}`);
     logger.info("Success");
 }
 
 function getSortedSendValues({
     tokenAddress, amount, chainIdTo, receiver, permit, useAssetFee, referralCode, autoParams,
-}: Required<GateSendArguments>): Parameters<DeBridgeGate["methods"]["send"]> {
+}: Required<GateSendArguments>): Parameters<XDCBridgeGate["methods"]["send"]> {
     return [
         tokenAddress,
         amount,

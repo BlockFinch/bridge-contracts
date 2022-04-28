@@ -84,12 +84,12 @@ Used for calls where ERC20 transfer is involved.
 ## externalCall
 ```solidity
   function externalCall(
-            address destination,
-            uint256 value,
-            bytes data,
+            address _destination,
+            uint256 _value,
+            bytes _data,
             bytes _nativeSender,
             uint256 _chainIdFrom,
-            bool storeSender
+            uint256 _flags
   ) internal returns (bool result)
 ```
 

@@ -6,13 +6,13 @@ import {MaxUint256} from "@ethersproject/constants";
 import IERC20Json from "@openzeppelin/contracts/build/contracts/IERC20.json"
 
 export default async function sendERC20(args: TsSendArguments) {
-    const {logger, web3, gateSendArguments: {tokenAddress, amount}, senderPrivateKey, debridgeGateAddress} = args;
+    const {logger, web3, gateSendArguments: {tokenAddress, amount}, senderPrivateKey, xbridgeGateAddress} = args;
     const account = web3.eth.accounts.privateKeyToAccount(senderPrivateKey);
     const senderAddress =  account.address;
     const tokenInstance = new web3.eth.Contract(IERC20Json.abi as AbiItem[], tokenAddress) as unknown as IERC20;
 
     async function getAllowance(): Promise<BN> {
-        const allowanceString = await tokenInstance.methods.allowance(senderAddress, debridgeGateAddress).call();
+        const allowanceString = await tokenInstance.methods.allowance(senderAddress, xbridgeGateAddress).call();
         return new BN(allowanceString);
     }
     async function approve(newAllowance: string) {
@@ -23,7 +23,7 @@ export default async function sendERC20(args: TsSendArguments) {
         logger.info("Approve gasPrice", gasPrice.toString());
 
         const approveMethod = await tokenInstance.methods.approve(
-            debridgeGateAddress,
+            xbridgeGateAddress,
             toWei(amount)
         )
         // sometimes gas estimation is lower than real
@@ -37,7 +37,7 @@ export default async function sendERC20(args: TsSendArguments) {
             value: 0,
             gasPrice,
             nonce,
-            data: tokenInstance.methods.approve(debridgeGateAddress, newAllowance).encodeABI(),
+            data: tokenInstance.methods.approve(xbridgeGateAddress, newAllowance).encodeABI(),
         };
 
         logger.info("Approve tx", tx);

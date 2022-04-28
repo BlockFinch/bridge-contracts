@@ -1,5 +1,5 @@
 {
-  "name": "debridge-contracts",
+  "name": "xbridge-contracts",
   "version": "4.1.0",
   "description": "",
   "scripts": {
@@ -18,14 +18,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/debridge-finance/debridge-contracts-v1.git"
+    "url": "git+https://github.com/xbridge-finance/xbridge-contracts-v1.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/debridge-finance/debridge-contracts-v1/issues"
+    "url": "https://github.com/xbridge-finance/xbridge-contracts-v1/issues"
   },
-  "homepage": "https://github.com/debridge-finance/debridge-contracts-v1#readme",
+  "homepage": "https://github.com/xbridge-finance/xbridge-contracts-v1#readme",
   "dependencies": {
     "@ethersproject/address": "git+https://github.com/BlockFinch/address.js",
     "@ethersproject/providers": "git+https://github.com/BlockFinch/progress",
@@ -81,7 +81,7 @@
     "ethers": "https://github.com/rds0751/ethers",
     "hardhat": "^2.6.1",
     "hardhat-contract-sizer": "^2.0.3",
-    "hardhat-deploy": "C:/Users/gaurav/Downloads/debridge/hardhat-deploy",
+    "hardhat-deploy": "C:/Users/gaurav/Downloads/xbridge/hardhat-deploy",
     "hardhat-gas-reporter": "^1.0.4",
     "prettier": "^2.3.2",
     "prettier-plugin-solidity": "^1.0.0-beta.17",

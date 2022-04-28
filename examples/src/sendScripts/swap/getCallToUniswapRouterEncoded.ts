@@ -11,8 +11,8 @@ import UniswapV2Router02Json from "@uniswap/v2-periphery/build/UniswapV2Router02
 import IUniswapV2FactoryJson from "@uniswap/v2-periphery/build/IUniswapV2Factory.json";
 import ERC20Json from "@openzeppelin/contracts/build/contracts/ERC20.json";
 import Web3 from "web3";
-import {DeBridgeGate} from "../../../../typechain-types-web3/DeBridgeGate";
-import getDebridgeId from "./getDebridgeId";
+import {XDCBridgeGate} from "../../../../typechain-types-web3/XDCBridgeGate";
+import getXbridgeId from "./getXbridgeId";
 import normalizeToDecimals from "./normalizeToDecimals";
 
 async function getUniswapTokenInstanceFromAddress(
@@ -28,8 +28,8 @@ async function getUniswapTokenInstanceFromAddress(
 }
 
 async function getTokenAddressOnToChain(
-    deBridgeGateFrom: DeBridgeGate,
-    deBridgeGateTo: DeBridgeGate,
+    deBridgeGateFrom: XDCBridgeGate,
+    deBridgeGateTo: XDCBridgeGate,
     TOKEN_ADDRESS_FROM: string,
     fromChainId: keyof typeof Web3RpcUrl,
     tokenAddressOnFromChain: string
@@ -39,10 +39,10 @@ async function getTokenAddressOnToChain(
     const nativeChainId = parseInt(nativeTokenInfo.nativeChainId);
 
     const deBridgeId = isNativeToken
-        ?  await getDebridgeId(deBridgeGateFrom, deBridgeGateTo, fromChainId, tokenAddressOnFromChain)
-        :  await getDebridgeId(deBridgeGateFrom, deBridgeGateTo, nativeChainId, nativeTokenInfo.nativeAddress)
+        ?  await getXbridgeId(deBridgeGateFrom, deBridgeGateTo, fromChainId, tokenAddressOnFromChain)
+        :  await getXbridgeId(deBridgeGateFrom, deBridgeGateTo, nativeChainId, nativeTokenInfo.nativeAddress)
 
-    const deBridgeInfo = await deBridgeGateTo.methods.getDebridge(deBridgeId).call();
+    const deBridgeInfo = await deBridgeGateTo.methods.getXbridge(deBridgeId).call();
 
     logger.info(`Sending ${isNativeToken ? '' : 'not '}native token`);
     logger.info(`nativeTokenInfo`, nativeTokenInfo);
@@ -50,7 +50,7 @@ async function getTokenAddressOnToChain(
     logger.info('deBridgeInfo',deBridgeInfo);
 
     if (!deBridgeInfo.exist) {
-        logger.error(`Token with address ${tokenAddressOnFromChain} does not have debridgeInfo on receiving chain`);
+        logger.error(`Token with address ${tokenAddressOnFromChain} does not have xbridgeInfo on receiving chain`);
         process.exit(GENERIC_ERROR_CODE);
     }
     return isNativeToken ? deBridgeInfo.tokenAddress : nativeTokenInfo.nativeAddress;
@@ -58,8 +58,8 @@ async function getTokenAddressOnToChain(
 
 export default async function getCallToUniswapRouterEncoded(
     web3To: Web3,
-    deBridgeGateFrom: DeBridgeGate,
-    deBridgeGateTo: DeBridgeGate,
+    deBridgeGateFrom: XDCBridgeGate,
+    deBridgeGateTo: XDCBridgeGate,
     TOKEN_ADDRESS_FROM: string,
     TOKEN_ADDRESS_TO: string,
     CHAIN_ID_FROM: keyof typeof Web3RpcUrl,

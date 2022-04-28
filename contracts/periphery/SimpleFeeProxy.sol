@@ -6,15 +6,15 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeab
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-import "../interfaces/IDeBridgeGate.sol";
+import "../interfaces/IXDCBridgeGate.sol";
 
-/// @dev Helper to withdraw fees from DeBridgeGate and transfer them to a treasury.
+/// @dev Helper to withdraw fees from XDCBridgeGate and transfer them to a treasury.
 contract SimpleFeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     /* ========== STATE VARIABLES ========== */
-    /// @dev DeBridgeGate address
-    IDeBridgeGate public debridgeGate;
+    /// @dev XDCBridgeGate address
+    IXDCBridgeGate public xbridgeGate;
     /// @dev Treasury address
     address public treasury;
 
@@ -33,8 +33,8 @@ contract SimpleFeeProxy is Initializable, AccessControlUpgradeable, PausableUpgr
 
     /* ========== CONSTRUCTOR  ========== */
 
-    function initialize(IDeBridgeGate _debridgeGate, address _treasury) public initializer {
-        debridgeGate = _debridgeGate;
+    function initialize(IXDCBridgeGate _xbridgeGate, address _treasury) public initializer {
+        xbridgeGate = _xbridgeGate;
         treasury = _treasury;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
@@ -49,8 +49,8 @@ contract SimpleFeeProxy is Initializable, AccessControlUpgradeable, PausableUpgr
         _unpause();
     }
 
-    function setDebridgeGate(IDeBridgeGate _debridgeGate) external onlyAdmin {
-        debridgeGate = _debridgeGate;
+    function setXbridgeGate(IXDCBridgeGate _xbridgeGate) external onlyAdmin {
+        xbridgeGate = _xbridgeGate;
     }
 
     function setTreasury(address _treasury) external onlyAdmin {
@@ -62,11 +62,11 @@ contract SimpleFeeProxy is Initializable, AccessControlUpgradeable, PausableUpgr
     function withdrawFee(address _tokenAddress) external whenNotPaused {
         if (treasury == address(0)) revert EmptyTreasuryAddress();
 
-        (uint256 nativeChainId, bytes memory nativeAddress) = debridgeGate.getNativeInfo(
+        (uint256 nativeChainId, bytes memory nativeAddress) = xbridgeGate.getNativeInfo(
             _tokenAddress
         );
-        bytes32 debridgeId = getbDebridgeId(nativeChainId, nativeAddress);
-        debridgeGate.withdrawFee(debridgeId);
+        bytes32 xbridgeId = getbXbridgeId(nativeChainId, nativeAddress);
+        xbridgeGate.withdrawFee(xbridgeId);
 
         uint256 amount = IERC20Upgradeable(_tokenAddress).balanceOf(address(this));
         IERC20Upgradeable(_tokenAddress).safeTransfer(treasury, amount);
@@ -76,8 +76,8 @@ contract SimpleFeeProxy is Initializable, AccessControlUpgradeable, PausableUpgr
     function withdrawNativeFee() external  whenNotPaused {
         if (treasury == address(0)) revert EmptyTreasuryAddress();
 
-        bytes32 debridgeId = getDebridgeId(getChainId(), address(0));
-        debridgeGate.withdrawFee(debridgeId);
+        bytes32 xbridgeId = getXbridgeId(getChainId(), address(0));
+        xbridgeGate.withdrawFee(xbridgeId);
 
         uint256 amount = address(this).balance;
          _safeTransferETH(treasury, amount);
@@ -91,7 +91,7 @@ contract SimpleFeeProxy is Initializable, AccessControlUpgradeable, PausableUpgr
     /// @dev Calculates asset identifier.
     /// @param _chainId Current chain id.
     /// @param _tokenAddress Address of the asset on the other chain.
-    function getbDebridgeId(uint256 _chainId, bytes memory _tokenAddress)
+    function getbXbridgeId(uint256 _chainId, bytes memory _tokenAddress)
         public
         pure
         returns (bytes32)
@@ -102,7 +102,7 @@ contract SimpleFeeProxy is Initializable, AccessControlUpgradeable, PausableUpgr
     /// @dev Calculates asset identifier.
     /// @param _chainId Current chain id.
     /// @param _tokenAddress Address of the asset on the other chain.
-    function getDebridgeId(uint256 _chainId, address _tokenAddress) public pure returns (bytes32) {
+    function getXbridgeId(uint256 _chainId, address _tokenAddress) public pure returns (bytes32) {
         return keccak256(abi.encodePacked(_chainId, _tokenAddress));
     }
 

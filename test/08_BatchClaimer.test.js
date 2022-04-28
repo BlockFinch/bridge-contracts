@@ -3,7 +3,7 @@ const { expectRevert } = require("@openzeppelin/test-helpers");
 const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
-const DeBridgeToken = artifacts.require("DeBridgeToken");
+const XDCBridgeToken = artifacts.require("XDCBridgeToken");
 const { toWei } = web3.utils;
 const { BigNumber } = require("ethers");
 const MAX = web3.utils.toTwosComplement(-1);
@@ -35,7 +35,7 @@ const nonExistBytes32 = [
   "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
 ]
 
-contract("DeBridgeGate light mode with batch claimer", function () {
+contract("XDCBridgeGate light mode with batch claimer", function () {
   before(async function () {
     this.signers = await ethers.getSigners();
     aliceAccount = this.signers[0];
@@ -51,7 +51,7 @@ contract("DeBridgeGate light mode with batch claimer", function () {
     fei = feiAccount.address;
     devid = devidAccount.address;
 
-    const Debridge = await ethers.getContractFactory("MockDeBridgeGate", alice);
+    const Xbridge = await ethers.getContractFactory("MockXDCBridgeGate", alice);
     const ClaimerFactory = await ethers.getContractFactory("Claimer", alice);
     const SignatureVerifier = await ethers.getContractFactory("SignatureVerifier", alice);
     const DefiControllerFactory = await ethers.getContractFactory("DefiController", alice);
@@ -81,7 +81,7 @@ contract("DeBridgeGate light mode with batch claimer", function () {
     //     uint256 _minConfirmations,
     //     uint256 _confirmationThreshold,
     //     uint256 _excessConfirmations,
-    //     address _debridgeAddress
+    //     address _xbridgeAddress
     // )
     this.signatureVerifier = await upgrades.deployProxy(SignatureVerifier, [
       this.minConfirmations,
@@ -130,19 +130,19 @@ contract("DeBridgeGate light mode with batch claimer", function () {
     //     IDefiController _defiController,
     // )
 
-    const DeBridgeTokenFactory = await ethers.getContractFactory("DeBridgeToken", alice);
-    const deBridgeToken = await DeBridgeTokenFactory.deploy();
-    const DeBridgeTokenDeployerFactory = await ethers.getContractFactory("DeBridgeTokenDeployer", alice);
+    const XDCBridgeTokenFactory = await ethers.getContractFactory("XDCBridgeToken", alice);
+    const deBridgeToken = await XDCBridgeTokenFactory.deploy();
+    const XDCBridgeTokenDeployerFactory = await ethers.getContractFactory("XDCBridgeTokenDeployer", alice);
     const deBridgeTokenDeployer = await upgrades.deployProxy(
-      DeBridgeTokenDeployerFactory,
+      XDCBridgeTokenDeployerFactory,
       [
         deBridgeToken.address,
         alice,
         ZERO_ADDRESS,
       ]);
 
-    this.debridge = await upgrades.deployProxy(
-      Debridge,
+    this.xbridge = await upgrades.deployProxy(
+      Xbridge,
       [
         this.excessConfirmations,
         this.signatureVerifier.address.toString(),
@@ -159,7 +159,7 @@ contract("DeBridgeGate light mode with batch claimer", function () {
       }
     );
 
-    await this.debridge.deployed();
+    await this.xbridge.deployed();
 
     this.claimer = await upgrades.deployProxy(
       ClaimerFactory,
@@ -167,7 +167,7 @@ contract("DeBridgeGate light mode with batch claimer", function () {
         ZERO_ADDRESS
       ]);
 
-    await this.debridge.updateChainSupport(
+    await this.xbridge.updateChainSupport(
       supportedChainIds,
       [
         {
@@ -184,7 +184,7 @@ contract("DeBridgeGate light mode with batch claimer", function () {
       false
     );
 
-    await this.debridge.updateChainSupport(
+    await this.xbridge.updateChainSupport(
       supportedChainIds,
       [
         {
@@ -201,43 +201,43 @@ contract("DeBridgeGate light mode with batch claimer", function () {
       true
     );
 
-    const GOVMONITORING_ROLE = await this.debridge.GOVMONITORING_ROLE();
-    await this.debridge.grantRole(GOVMONITORING_ROLE, alice);
-    await this.signatureVerifier.setDebridgeAddress(this.debridge.address.toString());
-    await deBridgeTokenDeployer.setDebridgeAddress(this.debridge.address);
+    const GOVMONITORING_ROLE = await this.xbridge.GOVMONITORING_ROLE();
+    await this.xbridge.grantRole(GOVMONITORING_ROLE, alice);
+    await this.signatureVerifier.setXbridgeAddress(this.xbridge.address.toString());
+    await deBridgeTokenDeployer.setXbridgeAddress(this.xbridge.address);
 
-    this.wethDebridgeId = await this.debridge.getDebridgeId(1, this.weth.address);
-    this.nativeDebridgeId = await this.debridge.getDebridgeId(1, ZERO_ADDRESS);
-    await this.debridge.updateAssetFixedFees(this.wethDebridgeId, supportedChainIds, [
+    this.wethXbridgeId = await this.xbridge.getXbridgeId(1, this.weth.address);
+    this.nativeXbridgeId = await this.xbridge.getXbridgeId(1, ZERO_ADDRESS);
+    await this.xbridge.updateAssetFixedFees(this.wethXbridgeId, supportedChainIds, [
       fixedNativeFee,
       fixedNativeFee,
     ]);
 
     const DEBRIDGE_GATE_ROLE = await this.callProxy.DEBRIDGE_GATE_ROLE();
-    await this.callProxy.grantRole(DEBRIDGE_GATE_ROLE, this.debridge.address);
+    await this.callProxy.grantRole(DEBRIDGE_GATE_ROLE, this.xbridge.address);
   });
 
   context("Test setting configurations by different users", () => {
     it("should set Verifier if called by the admin", async function () {
-      await this.debridge.setSignatureVerifier(this.signatureVerifier.address, {
+      await this.xbridge.setSignatureVerifier(this.signatureVerifier.address, {
         from: alice,
       });
-      const newAggregator = await this.debridge.signatureVerifier();
+      const newAggregator = await this.xbridge.signatureVerifier();
       assert.equal(this.signatureVerifier.address, newAggregator);
     });
 
-    it("should fail if setDeBridgeGate called by non admin", async function () {
+    it("should fail if setXDCBridgeGate called by non admin", async function () {
       await expectRevert(
-        this.claimer.connect(bobAccount).setDeBridgeGate(this.debridge.address),
+        this.claimer.connect(bobAccount).setXDCBridgeGate(this.xbridge.address),
         "AdminBadRole()"
       );
     });
 
-    it("should success if setDeBridgeGate called by admin", async function () {
-      await this.claimer.setDeBridgeGate(this.debridge.address);
+    it("should success if setXDCBridgeGate called by admin", async function () {
+      await this.claimer.setXDCBridgeGate(this.xbridge.address);
 
-      const debridgeAddress = await this.claimer.deBridgeGate();
-      assert(debridgeAddress, this.debridge.address);
+      const xbridgeAddress = await this.claimer.deBridgeGate();
+      assert(xbridgeAddress, this.xbridge.address);
     });
   });
 
@@ -254,8 +254,8 @@ contract("DeBridgeGate light mode with batch claimer", function () {
       const batchDeploys = [];
 
       for (let tokenAddress of tokenAddresses) {
-        const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
-        const deployId = await this.debridge.getDeployId(debridgeId, name, symbol, decimals);
+        const xbridgeId = await this.xbridge.getXbridgeId(chainId, tokenAddress);
+        const deployId = await this.xbridge.getDeployId(xbridgeId, name, symbol, decimals);
         const signatures = await submissionSignatures(bscWeb3, oracleKeys, deployId);
         batchDeploys.push({
           nativeTokenAddress: tokenAddress,
@@ -280,35 +280,35 @@ contract("DeBridgeGate light mode with batch claimer", function () {
         .withArgs(0);
 
       for (let tokenAddress of tokenAddresses) {
-        const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
-        await this.debridge.updateAsset(debridgeId, maxAmount, minReservesBps, amountThreshold);
-        const debridge = await this.debridge.getDebridge(debridgeId);
-        const debridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(debridgeId);
-        assert.equal(debridge.exist, true);
-        assert.equal(debridge.chainId, chainId);
-        assert.equal(debridge.maxAmount.toString(), maxAmount);
-        assert.equal(debridgeFeeInfo.collectedFees.toString(), "0");
-        assert.equal(debridge.balance.toString(), "0");
-        assert.equal(debridge.minReservesBps.toString(), minReservesBps);
+        const xbridgeId = await this.xbridge.getXbridgeId(chainId, tokenAddress);
+        await this.xbridge.updateAsset(xbridgeId, maxAmount, minReservesBps, amountThreshold);
+        const xbridge = await this.xbridge.getXbridge(xbridgeId);
+        const xbridgeFeeInfo = await this.xbridge.getXbridgeFeeInfo(xbridgeId);
+        assert.equal(xbridge.exist, true);
+        assert.equal(xbridge.chainId, chainId);
+        assert.equal(xbridge.maxAmount.toString(), maxAmount);
+        assert.equal(xbridgeFeeInfo.collectedFees.toString(), "0");
+        assert.equal(xbridge.balance.toString(), "0");
+        assert.equal(xbridge.minReservesBps.toString(), minReservesBps);
       }
     });
 
-    it("isDebridgesExists() should return true for existed debridgeIds", async function () {
-      const debridgeIds = tokenAddresses.map(token => {
-        return this.debridge.getDebridgeId(chainId, token)
+    it("isXbridgesExists() should return true for existed xbridgeIds", async function () {
+      const xbridgeIds = tokenAddresses.map(token => {
+        return this.xbridge.getXbridgeId(chainId, token)
       })
-      const results = await this.claimer.isDebridgesExists(debridgeIds);
-      assert.deepEqual(results, debridgeIds.map(i => true));
+      const results = await this.claimer.isXbridgesExists(xbridgeIds);
+      assert.deepEqual(results, xbridgeIds.map(i => true));
     });
 
-    it("isDebridgesExists() should return false for nonexisted debridgeIds", async function () {
-      const results = await this.claimer.isDebridgesExists(nonExistBytes32);
+    it("isXbridgesExists() should return false for nonexisted xbridgeIds", async function () {
+      const results = await this.claimer.isXbridgesExists(nonExistBytes32);
       assert.deepEqual(results, nonExistBytes32.map(i => false));
     });
   });
 
   context("Test batch claim", () => {
-    let debridgeId;
+    let xbridgeId;
     let receiver;
     const amount = toBN(toWei("100"));
     const nonce = 1;
@@ -318,9 +318,9 @@ contract("DeBridgeGate light mode with batch claimer", function () {
 
     before(async function () {
       receiver = bob;
-      debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
-      //console.log('debridgeId '+debridgeId);
-      currentChainId = await this.debridge.getChainId();
+      xbridgeId = await this.xbridge.getXbridgeId(chainId, tokenAddress);
+      //console.log('xbridgeId '+xbridgeId);
+      currentChainId = await this.xbridge.getChainId();
       //Array of submissionIds
       this.submissionForClaim = [];
       //Array of signatures
@@ -328,8 +328,8 @@ contract("DeBridgeGate light mode with batch claimer", function () {
 
       for (let i = 0; i < 10; i++) {
         var currentNonce = nonce + i;
-        this.submissionForClaim.push(await this.debridge.getSubmissionId(
-          debridgeId,
+        this.submissionForClaim.push(await this.xbridge.getSubmissionId(
+          xbridgeId,
           chainId,
           currentChainId,
           amount,
@@ -359,7 +359,7 @@ contract("DeBridgeGate light mode with batch claimer", function () {
         var currentNonce = nonce + i;
 
         //   struct ClaimInfo {
-        //     bytes32 debridgeId;
+        //     bytes32 xbridgeId;
         //     uint256 amount;
         //     uint256 chainIdFrom;
         //     address receiver;
@@ -369,7 +369,7 @@ contract("DeBridgeGate light mode with batch claimer", function () {
         // }
 
         var currentClaim = {
-          debridgeId: debridgeId,
+          xbridgeId: xbridgeId,
           amount: amount,
           chainIdFrom: chainId,
           receiver: receiver,

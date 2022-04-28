@@ -20,8 +20,8 @@ async function getSubmissionConfirmations(submissionId, API_ENDPOINT) {
   return response.data;
 }
 
-async function getNewAssetDeployConfirmations(debridgeId, API_ENDPOINT) {
-    const url = `${API_ENDPOINT}/api/ConfirmNewAssets/GetForDebridgeId?debridgeId=${debridgeId}`;
+async function getNewAssetDeployConfirmations(xbridgeId, API_ENDPOINT) {
+    const url = `${API_ENDPOINT}/api/ConfirmNewAssets/GetForXbridgeId?xbridgeId=${xbridgeId}`;
     const response = await axios.get(url);
     return response.data;
 }

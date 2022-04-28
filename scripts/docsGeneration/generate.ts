@@ -14,11 +14,7 @@ const typeOption = new Option('--type <type>', 'documentation to generate')
     .choices([...allowedDocTypes])
     .makeOptionMandatory()
 
-const documentationType: typeof allowedDocTypes[number] = (new Command())
-    .addOption(typeOption)
-    .parse(process.argv)
-    .opts()
-    .type
+const documentationType = 'all'
 
 
 const docgenCommonPart = 'solidity-docgen --input ./contracts/ --exclude ./contracts/mock --solc-module solc-0.8.7';
@@ -59,12 +55,6 @@ function generateDocForReadme() {
 }
 
 switch (documentationType) {
-    case "main":
-        generateMainDocs();
-        break;
-    case "readme":
-        generateDocForReadme();
-        break;
     case "all":
         generateMainDocs();
         generateDocForReadme();

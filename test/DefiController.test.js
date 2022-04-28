@@ -11,7 +11,7 @@ describe("DefiController", function () {
   before(async function () {
     [admin, worker, other] = await ethers.getSigners();
     this.DefiControllerFactory = await ethers.getContractFactory("MockDefiController");
-    this.DeBridgeFactory = await ethers.getContractFactory("MockDeBridgeGateForDefiController");
+    this.XDCBridgeFactory = await ethers.getContractFactory("MockXDCBridgeGateForDefiController");
     this.MockTokenFactory = await ethers.getContractFactory("MockToken");
     this.MockStrategyFactory = await ethers.getContractFactory("MockStrategy");
   });
@@ -28,20 +28,20 @@ describe("DefiController", function () {
     expect(await this.defiController.hasRole(DEFAULT_ADMIN_ROLE, admin.address)).to.be.equal(true);
   });
 
-  it.skip("only admin can setDeBridgeGate", async function () {
+  it.skip("only admin can setXDCBridgeGate", async function () {
     await expect(
-      this.defiController.connect(other).setDeBridgeGate(other.address)
+      this.defiController.connect(other).setXDCBridgeGate(other.address)
     ).to.be.revertedWith("AdminBadRole()");
   });
 
-  describe.skip("with debridgeGate", function () {
+  describe.skip("with xbridgeGate", function () {
     beforeEach(async function () {
-      this.debridge = await this.DeBridgeFactory.deploy();
-      await this.defiController.setDeBridgeGate(this.debridge.address);
+      this.xbridge = await this.XDCBridgeFactory.deploy();
+      await this.defiController.setXDCBridgeGate(this.xbridge.address);
     });
 
     it("deBridgeGate is correct", async function () {
-      expect(this.debridge.address).to.be.equal(await this.defiController.deBridgeGate());
+      expect(this.xbridge.address).to.be.equal(await this.defiController.deBridgeGate());
     });
 
     it("non-worker can't rebalanceStrategy", async function () {
@@ -243,17 +243,17 @@ describe("DefiController", function () {
             expect(ZERO_ADDRESS).to.be.equal(strategyFromContract.strategyToken);
           });
 
-          describe("mint stakeToken and send native eth on debridge", function () {
+          describe("mint stakeToken and send native eth on xbridge", function () {
             beforeEach(async function () {
-              await this.stakeToken.mint(this.debridge.address, tokenSupply);
-              await this.debridge.sendETH({ value: nativeTokenSupply });
+              await this.stakeToken.mint(this.xbridge.address, tokenSupply);
+              await this.xbridge.sendETH({ value: nativeTokenSupply });
             });
 
-            it("balanceOf debridge increased", async function () {
-              expect(await this.stakeToken.balanceOf(this.debridge.address)).to.be.equal(
+            it("balanceOf xbridge increased", async function () {
+              expect(await this.stakeToken.balanceOf(this.xbridge.address)).to.be.equal(
                 tokenSupply
               );
-              expect(await ethers.provider.getBalance(this.debridge.address)).to.be.equal(
+              expect(await ethers.provider.getBalance(this.xbridge.address)).to.be.equal(
                 nativeTokenSupply
               );
             });
@@ -288,8 +288,8 @@ describe("DefiController", function () {
                 strategyToken = await this.MockTokenFactory.deploy("Strategy Token", "STEST", 18);
                 strategy = await this.MockStrategyFactory.deploy();
 
-                await this.debridge.init();
-                await this.debridge.addDebridge(
+                await this.xbridge.init();
+                await this.xbridge.addXbridge(
                   this.stakeToken.address,
                   chainId,
                   maxAmount,
@@ -301,7 +301,7 @@ describe("DefiController", function () {
                   exist
                 );
 
-                await this.debridge.addDebridge(
+                await this.xbridge.addXbridge(
                   ZERO_ADDRESS,
                   chainId,
                   maxAmount,
@@ -312,7 +312,7 @@ describe("DefiController", function () {
                   chainFee,
                   exist
                 );
-                await this.debridge.setDefiController(this.defiController.address);
+                await this.xbridge.setDefiController(this.defiController.address);
               });
 
               it("rebalanceStrategy should do nothing if there is no avaliable reserves and strategy doesn't have reserves", async function () {
@@ -324,8 +324,8 @@ describe("DefiController", function () {
                   strategyToken.address
                 );
 
-                // add debridge with zero balance
-                await this.debridge.addDebridge(
+                // add xbridge with zero balance
+                await this.xbridge.addXbridge(
                   token.address,
                   chainId,
                   maxAmount,
@@ -338,7 +338,7 @@ describe("DefiController", function () {
                 );
 
                 // avaliableReserves == 0
-                expect(await this.debridge.getDefiAvaliableReserves(token.address)).to.be.equal(0);
+                expect(await this.xbridge.getDefiAvaliableReserves(token.address)).to.be.equal(0);
 
                 // currentReserves == 0
                 expect(
@@ -372,8 +372,8 @@ describe("DefiController", function () {
                   strategyToken.address
                 );
 
-                // add debridge with non zero balance
-                await this.debridge.addDebridge(
+                // add xbridge with non zero balance
+                await this.xbridge.addXbridge(
                   token.address,
                   chainId,
                   maxAmount,
@@ -386,7 +386,7 @@ describe("DefiController", function () {
                 );
 
                 // avaliableReserves > 0
-                expect(await this.debridge.getDefiAvaliableReserves(token.address)).to.be.not.equal(
+                expect(await this.xbridge.getDefiAvaliableReserves(token.address)).to.be.not.equal(
                   0
                 );
 
@@ -422,8 +422,8 @@ describe("DefiController", function () {
                   strategyToken.address
                 );
 
-                // add debridge with non zero balance
-                await this.debridge.addDebridge(
+                // add xbridge with non zero balance
+                await this.xbridge.addXbridge(
                   token.address,
                   chainId,
                   maxAmount,
@@ -436,7 +436,7 @@ describe("DefiController", function () {
                 );
 
                 // avaliableReserves > 0
-                expect(await this.debridge.getDefiAvaliableReserves(token.address)).to.be.not.equal(
+                expect(await this.xbridge.getDefiAvaliableReserves(token.address)).to.be.not.equal(
                   0
                 );
 
@@ -469,7 +469,7 @@ describe("DefiController", function () {
                 let strategyStakeTokenOptimalReserves;
 
                 beforeEach(async function () {
-                  stakeTokenAvaliableReserves = await this.debridge.getDefiAvaliableReserves(
+                  stakeTokenAvaliableReserves = await this.xbridge.getDefiAvaliableReserves(
                     this.stakeToken.address
                   );
 
@@ -659,12 +659,12 @@ describe("DefiController", function () {
                 });
 
                 it("rebalanceStrategy should withdraw all if avaliableReserves equals to zero and strategy have reserves", async function () {
-                  // set debridge's _minReservesBps to 100%
-                  const debridgeId = await this.debridge.getDebridgeId(
+                  // set xbridge's _minReservesBps to 100%
+                  const xbridgeId = await this.xbridge.getXbridgeId(
                     chainId,
                     this.stakeToken.address
                   );
-                  await this.debridge.updateAsset(debridgeId, 0, this.BPS_DENOMINATOR, 0);
+                  await this.xbridge.updateAsset(xbridgeId, 0, this.BPS_DENOMINATOR, 0);
 
                   expect(
                     await this.defiController

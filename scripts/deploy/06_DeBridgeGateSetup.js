@@ -1,4 +1,4 @@
-const debridgeInitParams = require("../../assets/debridgeInitParams");
+const xbridgeInitParams = require("../../assets/xbridgeInitParams");
 const { getLastDeployedProxy, waitTx } = require("../deploy-utils");
 
 module.exports = async function({getNamedAccounts, deployments, network}) {
@@ -8,14 +8,14 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
     });
   }
   const { deployer } = await getNamedAccounts();
-  const deployInitParams = debridgeInitParams[network.name];
+  const deployInitParams = xbridgeInitParams[network.name];
   if (!deployInitParams) return;
 
-  console.log("Start 06_DeBridgeGateSetup");
+  console.log("Start 06_XDCBridgeGateSetup");
 
   const wethAddress = deployInitParams.external.WETH || (await deployments.get("MockWeth")).address;
 
-  const deBridgeGateInstance = await getLastDeployedProxy("DeBridgeGate", deployer, [
+  const deBridgeGateInstance = await getLastDeployedProxy("XDCBridgeGate", deployer, [
     deployInitParams.excessConfirmations,
     wethAddress,
   ]);
@@ -28,7 +28,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   // --------------------------------
 
   console.log("sleeping");
-  await sleep(1000*30);
+  // await sleep(1000*30);
 
   let signatureVerifier = await getLastDeployedProxy("SignatureVerifier", deployer);
 
@@ -36,11 +36,11 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   tx = await deBridgeGateInstance.setSignatureVerifier(signatureVerifier.address);
   await waitTx(tx);
   console.log("sleeping");
-  await sleep(1000*30);
+  // await sleep(1000*30);
 
   // was added in constructor
-  // console.log(`signatureVerifier setDebridgeAddress ${deBridgeGateInstance.address}`);
-  // tx = await signatureVerifier.setDebridgeAddress(deBridgeGateInstance.address);
+  // console.log(`signatureVerifier setXbridgeAddress ${deBridgeGateInstance.address}`);
+  // tx = await signatureVerifier.setXbridgeAddress(deBridgeGateInstance.address);
   // await waitTx(tx);
 
 
@@ -53,7 +53,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   tx = await deBridgeGateInstance.setCallProxy(callProxy.address);
   await waitTx(tx);
   console.log("sleeping");
-  await sleep(1000*30);
+  // await sleep(1000*30);
 
   console.log(`callProxy ${callProxy.address} get DEBRIDGE_GATE_ROLE`);
   const DEBRIDGE_GATE_ROLE = await callProxy.DEBRIDGE_GATE_ROLE();
@@ -61,7 +61,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   tx = await callProxy.grantRole(DEBRIDGE_GATE_ROLE, deBridgeGateInstance.address);
   await waitTx(tx);
   console.log("sleeping");
-  await sleep(1000*30);
+  // await sleep(1000*30);
 
 
   // --------------------------------
@@ -73,12 +73,12 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   tx = await deBridgeGateInstance.setFeeProxy(feeProxy.address);
   await waitTx(tx);
   console.log("sleeping");
-  await sleep(1000*30);
+  // await sleep(1000*30);
 
   // added in constructor
-  // console.log(`feeProxy setDebridgeGate ${deBridgeGateInstance.address}`);
-  // console.log(`old debridgeGate ${ await feeProxy.debridgeGate()}`);
-  // tx = await feeProxy.setDebridgeGate(deBridgeGateInstance.address);
+  // console.log(`feeProxy setXbridgeGate ${deBridgeGateInstance.address}`);
+  // console.log(`old xbridgeGate ${ await feeProxy.xbridgeGate()}`);
+  // tx = await feeProxy.setXbridgeGate(deBridgeGateInstance.address);
   // await waitTx(tx);
 
   // console.log(`feeProxy setTreasury ${deployInitParams.treasuryAddress}`);
@@ -109,24 +109,24 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
     await waitTx(tx);
   }
   console.log("sleeping");
-  await sleep(1000*30);
+  // await sleep(1000*30);
 
 
   // --------------------------------
-  //    setup DeBridgeTokenDeployer
+  //    setup XDCBridgeTokenDeployer
   // --------------------------------
 
-  const deBridgeTokenDeployer = await getLastDeployedProxy("DeBridgeTokenDeployer", deployer);
+  const deBridgeTokenDeployer = await getLastDeployedProxy("XDCBridgeTokenDeployer", deployer);
 
-  console.log(`deBridge setDeBridgeTokenDeployer ${deBridgeTokenDeployer.address}`);
-  tx = await deBridgeGateInstance.setDeBridgeTokenDeployer(deBridgeTokenDeployer.address);
+  console.log(`deBridge setXDCBridgeTokenDeployer ${deBridgeTokenDeployer.address}`);
+  tx = await deBridgeGateInstance.setXDCBridgeTokenDeployer(deBridgeTokenDeployer.address);
   await waitTx(tx);
   console.log("sleeping");
-  await sleep(1000*30);
+  // await sleep(1000*30);
 
   // already added in constructor
-  // console.log(`deBridgeTokenDeployer setDebridgeAddress ${deBridgeGateInstance.address}`);
-  // tx = await deBridgeTokenDeployer.setDebridgeAddress(deBridgeGateInstance.address);
+  // console.log(`deBridgeTokenDeployer setXbridgeAddress ${deBridgeGateInstance.address}`);
+  // tx = await deBridgeTokenDeployer.setXbridgeAddress(deBridgeGateInstance.address);
   // await waitTx(tx);
 
 
@@ -157,7 +157,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   );
   await waitTx(tx);
   console.log("sleeping");
-  await sleep(1000*30);
+  // await sleep(1000*30);
 
   tx = await deBridgeGateInstance.updateChainSupport(
     deployInitParams.supportedChains,
@@ -166,7 +166,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   );
   await waitTx(tx);
   console.log("sleeping");
-  await sleep(1000*30);
+  // await sleep(1000*30);
 
   console.log("deployInitParams.supportedChains: ", deployInitParams.supportedChains);
   console.log("deployInitParams.fixedNativeFee: ", deployInitParams.fixedNativeFee);
@@ -188,10 +188,10 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   await waitTx(tx);
 };
 
-module.exports.tags = ["06_DeBridgeGateSetup"]
+module.exports.tags = ["06_XDCBridgeGateSetup"]
 module.exports.dependencies = [
-  '01-0_DeBridgeGate',
-  '01-2_DeBridgeTokenDeployer',
+  '01-0_XDCBridgeGate',
+  '01-2_XDCBridgeTokenDeployer',
   '02_SignatureVerifier',
   '03_CallProxy',
   '04_FeeProxy',

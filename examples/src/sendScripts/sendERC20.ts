@@ -1,6 +1,6 @@
 // @ts-nocheck TODO remove and fix
 import Web3 from "web3";
-import DeBridgeGateJson from "../../../artifacts/contracts/transfers/DeBridgeGate.sol/DeBridgeGate.json";
+import XDCBridgeGateJson from "../../../artifacts/contracts/transfers/XDCBridgeGate.sol/XDCBridgeGate.json";
 import IERC20Json from "@openzeppelin/contracts/build/contracts/IERC20.json"
 import log4js from "log4js";
 import {toWei} from "web3-utils";
@@ -19,8 +19,8 @@ const chainIdTo = process.env.CHAIN_ID_TO;
 const amount = process.env.AMOUNT;
 const rpc = Web3RpcUrl[chainIdFrom];
 const web3 = new Web3(rpc);
-const debridgeGateAddress = process.env.DEBRIDGEGATE_ADDRESS;
-const debridgeGateInstance = new web3.eth.Contract(DeBridgeGateJson.abi, debridgeGateAddress);
+const xbridgeGateAddress = process.env.DEBRIDGEGATE_ADDRESS;
+const xbridgeGateInstance = new web3.eth.Contract(XDCBridgeGateJson.abi, xbridgeGateAddress);
 const tokenInstance = new web3.eth.Contract(IERC20Json.abi, tokenAddress);
 
 const privKey = process.env.SENDER_PRIVATE_KEY;
@@ -57,7 +57,7 @@ const main = async () => {
 main().catch(e => logger.error(e));
 
 async function getAllowance() {
-    const allowanceString = await tokenInstance.methods.allowance(senderAddress, debridgeGateAddress).call();
+    const allowanceString = await tokenInstance.methods.allowance(senderAddress, xbridgeGateAddress).call();
     return parseInt(allowanceString);
 }
 
@@ -69,7 +69,7 @@ async function approve(newAllowance) {
     logger.info("Approve gasPrice", gasPrice.toString());
 
     let estimateGas = await tokenInstance.methods
-        .approve(debridgeGateAddress, toWei(amount))
+        .approve(xbridgeGateAddress, toWei(amount))
         .estimateGas({from: senderAddress})
     ;
     // sometimes not enough estimateGas
@@ -83,7 +83,7 @@ async function approve(newAllowance) {
             value: 0,
             gasPrice,
             nonce,
-            data: tokenInstance.methods.approve(debridgeGateAddress, newAllowance).encodeABI(),
+            data: tokenInstance.methods.approve(xbridgeGateAddress, newAllowance).encodeABI(),
         };
 
     logger.info("Approve tx", tx);
@@ -121,7 +121,7 @@ async function send(
         autoParams// bytes calldata _autoParams
     });
 
-    const estimateGas = await debridgeGateInstance.methods
+    const estimateGas = await xbridgeGateInstance.methods
         .send(
             tokenAddress, //address _tokenAddress,
             amount, // uint256 _amount,
@@ -142,12 +142,12 @@ async function send(
     const tx =
     {
         from: senderAddress,
-        to: debridgeGateAddress,
+        to: xbridgeGateAddress,
         gas: estimateGas,
         value: fixNativeFee,
         gasPrice: gasPrice,
         nonce,
-        data: debridgeGateInstance.methods
+        data: xbridgeGateInstance.methods
             .send(
                 tokenAddress, //address _tokenAddress,
                 amount, // uint256 _amount,
@@ -168,7 +168,7 @@ async function send(
     let result = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
     logger.info("Send result", result);
 
-    const logs = result.logs.find(l=>l.address===debridgeGateAddress);
+    const logs = result.logs.find(l=>l.address===xbridgeGateAddress);
     const submissionId = logs.data.substring(0, 66);
     logger.info(`SUBMISSION ID ${submissionId}`);
     logger.info("Success");

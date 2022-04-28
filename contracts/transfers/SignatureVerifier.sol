@@ -18,12 +18,12 @@ contract SignatureVerifier is OraclesManager, ISignatureVerifier {
     /// @dev Current block
     uint40 public currentBlock;
 
-    /// @dev Debridge gate address
-    address public debridgeAddress;
+    /// @dev Xbridge gate address
+    address public xbridgeAddress;
 
     /* ========== ERRORS ========== */
 
-    error DeBridgeGateBadRole();
+    error XDCBridgeGateBadRole();
     error NotConfirmedByRequiredOracles();
     error NotConfirmedThreshold();
     error SubmissionNotConfirmed();
@@ -31,8 +31,8 @@ contract SignatureVerifier is OraclesManager, ISignatureVerifier {
 
     /* ========== MODIFIERS ========== */
 
-    modifier onlyDeBridgeGate() {
-        if (msg.sender != debridgeAddress) revert DeBridgeGateBadRole();
+    modifier onlyXDCBridgeGate() {
+        if (msg.sender != xbridgeAddress) revert XDCBridgeGateBadRole();
         _;
     }
 
@@ -46,11 +46,11 @@ contract SignatureVerifier is OraclesManager, ISignatureVerifier {
         uint8 _minConfirmations,
         uint8 _confirmationThreshold,
         uint8 _excessConfirmations,
-        address _debridgeAddress
+        address _xbridgeAddress
     ) public initializer {
         OraclesManager.initialize(_minConfirmations, _excessConfirmations);
         confirmationThreshold = _confirmationThreshold;
-        debridgeAddress = _debridgeAddress;
+        xbridgeAddress = _xbridgeAddress;
     }
 
 
@@ -59,7 +59,7 @@ contract SignatureVerifier is OraclesManager, ISignatureVerifier {
         bytes32 _submissionId,
         bytes memory _signatures,
         uint8 _excessConfirmations
-    ) external override onlyDeBridgeGate {
+    ) external override onlyXDCBridgeGate {
         //Need confirmation to confirm submission
         uint8 needConfirmations = _excessConfirmations > minConfirmations
             ? _excessConfirmations
@@ -122,10 +122,10 @@ contract SignatureVerifier is OraclesManager, ISignatureVerifier {
         confirmationThreshold = _confirmationThreshold;
     }
 
-    /// @dev Sets core debridge conrtact address.
-    /// @param _debridgeAddress Debridge address.
-    function setDebridgeAddress(address _debridgeAddress) external onlyAdmin {
-        debridgeAddress = _debridgeAddress;
+    /// @dev Sets core xbridge conrtact address.
+    /// @param _xbridgeAddress Xbridge address.
+    function setXbridgeAddress(address _xbridgeAddress) external onlyAdmin {
+        xbridgeAddress = _xbridgeAddress;
     }
 
     /* ========== VIEW ========== */

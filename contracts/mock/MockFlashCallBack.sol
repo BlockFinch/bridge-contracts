@@ -3,7 +3,7 @@ pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "../interfaces/IDeBridgeGate.sol";
+import "../interfaces/IXDCBridgeGate.sol";
 
 contract MockFlashCallback {
     using SafeERC20 for IERC20;
@@ -13,7 +13,7 @@ contract MockFlashCallback {
     bool public revertOrNo;
 
     /// @param fee The fee amount in token due to the pool by the end of the flash
-    // /// @param data Any data passed through by the caller via the IDeBridgeGate#flash call
+    // /// @param data Any data passed through by the caller via the IXDCBridgeGate#flash call
     function flashCallback(uint256 fee, bytes calldata /* data */) external {
         if (revertOrNo) {
             IERC20(lastTokenAddress).safeTransfer(lastFlashReceiver, lastAmount);
@@ -33,6 +33,6 @@ contract MockFlashCallback {
         lastAmount = _amount;
         lastTokenAddress = _tokenAddress;
         lastFlashReceiver = _flashReceiver;
-        IDeBridgeGate(_flashReceiver).flash(_tokenAddress, _receiver, _amount, "0");
+        IXDCBridgeGate(_flashReceiver).flash(_tokenAddress, _receiver, _amount, "0");
     }
 }

@@ -1,13 +1,13 @@
-const debridgeInitParams = require("../../assets/debridgeInitParams");
+const xbridgeInitParams = require("../../assets/xbridgeInitParams");
 
 module.exports = async function ({ getNamedAccounts, deployments, network }) {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
   const networkName = network.name;
-  const deployInitParams = debridgeInitParams[networkName];
+  const deployInitParams = xbridgeInitParams[networkName];
   if (!deployInitParams) return;
 
-  await deploy("DeBridgeToken", {
+  await deploy("XDCBridgeToken", {
     from: deployer,
     // deterministicDeployment: true,
     log: true,
@@ -15,4 +15,4 @@ module.exports = async function ({ getNamedAccounts, deployments, network }) {
   });
 };
 
-module.exports.tags = ["01-1_DeBridgeToken"]
+module.exports.tags = ["01-1_XDCBridgeToken"]

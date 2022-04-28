@@ -4,7 +4,7 @@ pragma solidity 0.8.7;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "../transfers/DeBridgeGate.sol";
+import "../transfers/XDCBridgeGate.sol";
 
 contract Claimer is
     Initializable,
@@ -12,7 +12,7 @@ contract Claimer is
 {
     /* ========== STATE VARIABLES ========== */
 
-    DeBridgeGate public deBridgeGate; // debridge gate address
+    XDCBridgeGate public deBridgeGate; // xbridge gate address
 
     /* ========== ERRORS ========== */
 
@@ -28,7 +28,7 @@ contract Claimer is
     /* ========== Struct ========== */
 
     struct ClaimInfo {
-        bytes32 debridgeId;
+        bytes32 xbridgeId;
         uint256 amount;
         uint256 chainIdFrom;
         address receiver;
@@ -56,7 +56,7 @@ contract Claimer is
     /* ========== CONSTRUCTOR  ========== */
 
     function initialize(
-        DeBridgeGate _deBridgeGate
+        XDCBridgeGate _deBridgeGate
     ) public initializer {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
 
@@ -70,7 +70,7 @@ contract Claimer is
         for (uint256 i = 0; i < claimsCount; i++) {
             ClaimInfo memory claim = _claims[i];
             try deBridgeGate.claim(
-                    claim.debridgeId,
+                    claim.xbridgeId,
                     claim.amount,
                     claim.chainIdFrom,
                     claim.receiver,
@@ -117,10 +117,10 @@ contract Claimer is
         }
     }
 
-    function isDebridgesExists(
-        bytes32[] calldata _debridgeIds
+    function isXbridgesExists(
+        bytes32[] calldata _xbridgeIds
     ) external view returns (bool[] memory result) {
-        uint256 count = _debridgeIds.length;
+        uint256 count = _xbridgeIds.length;
         result = new bool[](count);
         for (uint256 i = 0; i < count; i++) {
             (
@@ -131,7 +131,7 @@ contract Claimer is
                 , //address tokenAddress,
                 , //uint16 minReservesBps,
                 bool exist
-            ) = deBridgeGate.getDebridge(_debridgeIds[i]);
+            ) = deBridgeGate.getXbridge(_xbridgeIds[i]);
             result[i] = exist;
         }
     }
@@ -155,7 +155,7 @@ contract Claimer is
         );
     }
 
-    function setDeBridgeGate(DeBridgeGate _deBridgeGate) external onlyAdmin {
+    function setXDCBridgeGate(XDCBridgeGate _deBridgeGate) external onlyAdmin {
         deBridgeGate = _deBridgeGate;
     }
 

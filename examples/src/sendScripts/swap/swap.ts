@@ -1,12 +1,12 @@
 import Web3 from "web3";
-import DeBridgeGateJson from "../../../../artifacts/contracts/transfers/DeBridgeGate.sol/DeBridgeGate.json";
+import XDCBridgeGateJson from "../../../../artifacts/contracts/transfers/XDCBridgeGate.sol/XDCBridgeGate.json";
 import ERC20Json from "@openzeppelin/contracts/build/contracts/ERC20.json"
 import {AbiItem, toWei, fromWei} from "web3-utils";
 import {ether, Web3RpcUrl, zero} from "../constants";
 import envVars from './getTypedEnvVariables';
 import consoleOptions from './getTypedConsoleArguments';
 import {ERC20} from "../../../../typechain-types-web3/ERC20";
-import {DeBridgeGate} from "../../../../typechain-types-web3/DeBridgeGate";
+import {XDCBridgeGate} from "../../../../typechain-types-web3/XDCBridgeGate";
 import {AddressZero} from "@ethersproject/constants";
 import logger from "./logger";
 import {GENERIC_ERROR_CODE} from "../constants";
@@ -30,16 +30,16 @@ const {CHAIN_ID_FROM, CHAIN_ID_TO, TOKEN_ADDRESS_FROM, TOKEN_ADDRESS_TO, AMOUNT}
 const rpcFrom = Web3RpcUrl[CHAIN_ID_FROM]
 const web3From = new Web3(rpcFrom);
 const deBridgeGateFrom = new web3From.eth.Contract(
-    DeBridgeGateJson.abi as AbiItem[],
+    XDCBridgeGateJson.abi as AbiItem[],
     DEBRIDGEGATE_ADDRESS
-) as unknown as DeBridgeGate;
+) as unknown as XDCBridgeGate;
 
 const rpcTo = Web3RpcUrl[CHAIN_ID_TO]
 const web3To = new Web3(rpcTo);
 const deBridgeGateTo = new web3To.eth.Contract(
-    DeBridgeGateJson.abi as AbiItem[],
+    XDCBridgeGateJson.abi as AbiItem[],
     DEBRIDGEGATE_ADDRESS
-) as unknown as DeBridgeGate;
+) as unknown as XDCBridgeGate;
 
 async function getDecimalsMultiplierForSentToken() {
     if (TOKEN_ADDRESS_FROM === AddressZero){
@@ -131,8 +131,8 @@ async function main() {
         logger,
         web3: web3From,
         senderPrivateKey: SENDER_PRIVATE_KEY,
-        debridgeGateInstance: deBridgeGateFrom,
-        debridgeGateAddress: DEBRIDGEGATE_ADDRESS,
+        xbridgeGateInstance: deBridgeGateFrom,
+        xbridgeGateAddress: DEBRIDGEGATE_ADDRESS,
         value: isSendingNativeToken ? amountWhole.toString() : feesToPayInNativeToken.toString(),
         gateSendArguments,
     }

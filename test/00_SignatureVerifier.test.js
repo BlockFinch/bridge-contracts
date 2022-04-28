@@ -28,7 +28,7 @@ contract("SignatureVerifier", function () {
     //   uint8 _minConfirmations,
     //   uint8 _confirmationThreshold,
     //   uint8 _excessConfirmations,
-    //   address _debridgeAddress
+    //   address _xbridgeAddress
     // )
 
     this.aggregator = await upgrades.deployProxy(SignatureVerifier, [

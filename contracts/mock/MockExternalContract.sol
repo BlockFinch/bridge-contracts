@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.7;
 
-import "../interfaces/IDeBridgeGate.sol";
+import "../interfaces/IXDCBridgeGate.sol";
 
 contract MockExternalContract {
 
     function readIsSubmissionUsed(
-        IDeBridgeGate _gate,
-        bytes32 _debridgeId
+        IXDCBridgeGate _gate,
+        bytes32 _xbridgeId
     ) external returns (bool) {
-        return _gate.isSubmissionUsed(_debridgeId);
+        return _gate.isSubmissionUsed(_xbridgeId);
     }
 }

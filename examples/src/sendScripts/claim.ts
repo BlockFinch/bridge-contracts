@@ -1,7 +1,7 @@
 // @ts-nocheck TODO remove and fix
 import Web3 from "web3";
-import DeBridgeGateJson from "../../../artifacts/contracts/transfers/DeBridgeGate.sol/DeBridgeGate.json";
-import DeBridgeTokenDeployerJson from "../../../artifacts/contracts/transfers/DeBridgeTokenDeployer.sol/DeBridgeTokenDeployer.json";
+import XDCBridgeGateJson from "../../../artifacts/contracts/transfers/XDCBridgeGate.sol/XDCBridgeGate.json";
+import XDCBridgeTokenDeployerJson from "../../../artifacts/contracts/transfers/XDCBridgeTokenDeployer.sol/XDCBridgeTokenDeployer.json";
 import log4js from "log4js";
 import {getSubmission, getSubmissionConfirmations} from "./apiService";
 import {log4jsConfig, Web3RpcUrl} from "./constants";
@@ -30,9 +30,9 @@ logger.info(`SUBMISSION_ID : ${SUBMISSION_ID}`);
         const rpc = Web3RpcUrl[chainIdTo];
         const web3 = new Web3(rpc);
 
-        const debridgeGateInstance = new web3.eth.Contract(DeBridgeGateJson.abi, DEBRIDGEGATE_ADDRESS);
-        const DeBridgeTokenDeployer = new web3.eth.Contract(DeBridgeTokenDeployerJson.abi, DEBRIDGEGATE_TOKEN_ADDRESS);
-        const isSubmissionUsed = await debridgeGateInstance.methods.isSubmissionUsed(SUBMISSION_ID).call();
+        const xbridgeGateInstance = new web3.eth.Contract(XDCBridgeGateJson.abi, DEBRIDGEGATE_ADDRESS);
+        const XDCBridgeTokenDeployer = new web3.eth.Contract(XDCBridgeTokenDeployerJson.abi, DEBRIDGEGATE_TOKEN_ADDRESS);
+        const isSubmissionUsed = await xbridgeGateInstance.methods.isSubmissionUsed(SUBMISSION_ID).call();
 
         if (isSubmissionUsed) {
             logger.error(`Submission already used`);
@@ -55,7 +55,7 @@ logger.info(`SUBMISSION_ID : ${SUBMISSION_ID}`);
             value: 0,
             gasPrice: gasPrice,
             nonce,
-            data: debridgeGateInstance.methods.deployNewAsset(
+            data: xbridgeGateInstance.methods.deployNewAsset(
             '0xA08381dE1cAedD05413C42Fd7E59779DE1F0b4b0',
             '51',
             'Wrapped Test XDC',
@@ -71,16 +71,16 @@ logger.info(`SUBMISSION_ID : ${SUBMISSION_ID}`);
         const result = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
         logger.info("Result", result);
         logger.info("Success");
-        const debridge_id = await debridgeGateInstance.methods.getDebridgeId('51', '0xA08381dE1cAedD05413C42Fd7E59779DE1F0b4b0').call();
-        const item = await DeBridgeTokenDeployer.methods.overridedTokens('0x0e4ff116d2faf056156d31da16ff7c3c906d57187440adbb77baf74d1b60f6a9').call();
+        const xbridge_id = await xbridgeGateInstance.methods.getXbridgeId('51', '0xA08381dE1cAedD05413C42Fd7E59779DE1F0b4b0').call();
+        const item = await XDCBridgeTokenDeployer.methods.overridedTokens('0x0e4ff116d2faf056156d31da16ff7c3c906d57187440adbb77baf74d1b60f6a9').call();
         console.info("Token:", 
         item,
-        debridge_id,
+        xbridge_id,
         result
         );
         await claim(
             web3,
-            debridgeGateInstance,
+            xbridgeGateInstance,
             '0x0e4ff116d2faf056156d31da16ff7c3c906d57187440adbb77baf74d1b60f6a9',
             '999000000000000000',
             '51',
@@ -97,8 +97,8 @@ logger.info(`SUBMISSION_ID : ${SUBMISSION_ID}`);
 
 async function claim(
     web3,
-    debridgeGateInstance,
-    debridgeId, //bytes32 _debridgeId,
+    xbridgeGateInstance,
+    xbridgeId, //bytes32 _xbridgeId,
     amount, // uint256 _amount,
     chainIdFrom, //uint256 _chainIdFrom,
     receiver, // address _receiver,
@@ -112,7 +112,7 @@ async function claim(
     const gasPrice = await web3.eth.getGasPrice();
     logger.info("gasPrice", gasPrice.toString());
     logger.info({
-        debridgeId, //bytes32 _debridgeId,
+        xbridgeId, //bytes32 _xbridgeId,
         amount, // uint256 _amount,
         chainIdFrom, //uint256 _chainIdFrom,
         receiver, // address _receiver,
@@ -122,9 +122,9 @@ async function claim(
     });
 
 
-    // const estimateGas = await debridgeGateInstance.methods
+    // const estimateGas = await xbridgeGateInstance.methods
     // .claim(
-    //     debridgeId, //bytes32 _debridgeId,
+    //     xbridgeId, //bytes32 _xbridgeId,
     //     amount, // uint256 _amount,
     //     chainIdFrom, //uint256 _chainIdFrom,
     //     receiver, // address _receiver,
@@ -146,9 +146,9 @@ async function claim(
         value: 0,
         gasPrice: gasPrice,
         nonce,
-        data: debridgeGateInstance.methods
+        data: xbridgeGateInstance.methods
             // function claim(
-            //     bytes32 _debridgeId,
+            //     bytes32 _xbridgeId,
             //     uint256 _amount,
             //     uint256 _chainIdFrom,
             //     address _receiver,
@@ -157,7 +157,7 @@ async function claim(
             //     bytes calldata _autoParams
             // )
             .claim(
-                debridgeId, //bytes32 _debridgeId,
+                xbridgeId, //bytes32 _xbridgeId,
                 amount, // uint256 _amount,
                 chainIdFrom, //uint256 _chainIdFrom,
                 receiver, // address _receiver,

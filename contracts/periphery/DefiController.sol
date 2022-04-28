@@ -8,7 +8,7 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "../interfaces/IUniswapV2Pair.sol";
 import "../interfaces/IUniswapV2Factory.sol";
-import "../interfaces/IDeBridgeGate.sol";
+import "../interfaces/IXDCBridgeGate.sol";
 import "../interfaces/IStrategy.sol";
 
 contract DefiController is Initializable, AccessControlUpgradeable, PausableUpgradeable {
@@ -36,7 +36,7 @@ contract DefiController is Initializable, AccessControlUpgradeable, PausableUpgr
     // token address => total maxReserves for all strategies using this token in bps, should be <= BPS_DENOMINATOR
     mapping(address => uint256) public tokenTotalReservesBps;
 
-    IDeBridgeGate public deBridgeGate;
+    IXDCBridgeGate public deBridgeGate;
 
     /* ========== EVENTS ========== */
 
@@ -81,7 +81,7 @@ contract DefiController is Initializable, AccessControlUpgradeable, PausableUpgr
 
     function initialize()
         public
-        //IDeBridgeGate _deBridgeGate)
+        //IXDCBridgeGate _deBridgeGate)
         initializer
     {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
@@ -262,7 +262,7 @@ contract DefiController is Initializable, AccessControlUpgradeable, PausableUpgr
         emit UpdateStrategy(_strategy, _isEnabled, _maxReservesBps);
     }
 
-    function setDeBridgeGate(IDeBridgeGate _deBridgeGate) external onlyAdmin {
+    function setXDCBridgeGate(IXDCBridgeGate _deBridgeGate) external onlyAdmin {
         deBridgeGate = _deBridgeGate;
     }
 

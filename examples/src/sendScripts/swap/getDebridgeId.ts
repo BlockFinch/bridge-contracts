@@ -1,19 +1,19 @@
 import {AddressZero} from "@ethersproject/constants";
 import logger from "./logger";
-import {DeBridgeGate} from "../../../../typechain-types-web3/DeBridgeGate";
+import {XDCBridgeGate} from "../../../../typechain-types-web3/XDCBridgeGate";
 
-export default async function getDebridgeId(
-    deBridgeGateFrom: DeBridgeGate,
-    deBridgeGateTo: DeBridgeGate,
+export default async function getXbridgeId(
+    deBridgeGateFrom: XDCBridgeGate,
+    deBridgeGateTo: XDCBridgeGate,
     tokenNativeChainId: number,
     tokenAddressOnNativeChain: string
 ): Promise<string> {
     const isMainTokenRequested = tokenAddressOnNativeChain === AddressZero;
-    const addressToUseForDebridgeId = isMainTokenRequested
+    const addressToUseForXbridgeId = isMainTokenRequested
         ? await deBridgeGateFrom.methods.weth().call()
         : tokenAddressOnNativeChain;
 
-    logger.info(`Address to use for debridge id`, addressToUseForDebridgeId);
+    logger.info(`Address to use for xbridge id`, addressToUseForXbridgeId);
 
-    return deBridgeGateTo.methods.getDebridgeId(tokenNativeChainId, addressToUseForDebridgeId).call();
+    return deBridgeGateTo.methods.getXbridgeId(tokenNativeChainId, addressToUseForXbridgeId).call();
 }

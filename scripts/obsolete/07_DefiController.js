@@ -1,10 +1,10 @@
-const debridgeInitParams = require("../../assets/debridgeInitParams");
+const xbridgeInitParams = require("../../assets/xbridgeInitParams");
 const { deployProxy } = require("../deploy-utils");
 
 module.exports = async function({ getNamedAccounts, deployments, network}) {
   // const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
-  const deployInitParams = debridgeInitParams[network.name];
+  const deployInitParams = xbridgeInitParams[network.name];
   if (!deployInitParams) return;
 
   if (deployInitParams.deploy.DefiController) {

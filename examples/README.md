@@ -1,12 +1,12 @@
 <br/>
 <p align="center">
-<a href="https://debridge.finance/" target="_blank">
+<a href="https://xbridge.finance/" target="_blank">
 <img src="https://user-images.githubusercontent.com/10200871/137014801-40decb80-0595-4f0f-8ee5-f0f1ab5c0380.png" width="225" alt="logo">
 </a>
 </p>
 <br/>
 
-[deBridge](https://debridge.finance/) — cross-chain interoperability
+[deBridge](https://xbridge.finance/) — cross-chain interoperability
  and liquidity transfer protocol that allows the truly decentralized transfer of data and assets between various blockchains.
 
 ## Demo Scripts of Interaction with deBridge Protocol
@@ -37,12 +37,12 @@ Please note the resulted `SubmissionID` which will be needed during the claim st
 deBridge provides an explorer that allows tracking the status of all cross-chain transactions that pass through the protocol. Just put in txId in the search bar in order to see your transaction details
 
 #### Links to the explorer:
-**Testnet:** https://testnet-explorer.debridge.finance/
+**Testnet:** https://testnet-explorer.xbridge.finance/
 
-**Mainnet:** https://mainnet-explorer.debridge.finance/
+**Mainnet:** https://mainnet-explorer.xbridge.finance/
 
 ### Claim transaction in the destination chain
-The protocol implements [locking and minting](https://docs.debridge.finance/the-core-protocol/protocol-overview#naming) mechanics and guarantees that all wrapped assets (deAssets) are 1:1 backed by the collateral locked in the native chain of each respective asset
+The protocol implements [locking and minting](https://docs.xbridge.finance/the-core-protocol/protocol-overview#naming) mechanics and guarantees that all wrapped assets (deAssets) are 1:1 backed by the collateral locked in the native chain of each respective asset
 
 In order to have the transaction executed in the target chain, it should be claimed by passing all parameters of the transaction alongside signatures of submissionId from all deBridge validators. 
 
@@ -55,7 +55,7 @@ In order to claim transaction execute
 BridgeAppBase.sol is an abstract contract that allows setting chain_ids and addresses in other chains that can call its' methods. This base contract allows the implementation of different cross-chain intercommunication scenarios
 
 ### How to use
-1. Copy ICallProxy from contracts/interfaces and IDeBridgeGate from contracts/examples
+1. Copy ICallProxy from contracts/interfaces and IXDCBridgeGate from contracts/examples
 2. Copy contracts/libraries/Flags.sol
 3. Copy contracts/examples/BridgeAppBase/BridgeAppBase.sol
 4. Inherit BridgeAppBase.sol and create `send` and `onBridgedMessage` or similar functions you would like to use.
@@ -97,7 +97,7 @@ This example shows how to send a message between two chains using Incrementor.so
  - `_chainIdFrom` set to the sending chain id
 6. Call Incrementor.send on sending chain
  - _data will be ignored, so you may set any value, for example empty string ""
-7. Wait for the message to go through the bridge and for execution on https://testnet-explorer.debridge.finance/explorer
+7. Wait for the message to go through the bridge and for execution on https://testnet-explorer.xbridge.finance/explorer
 8. Check that claimTimes is incremented
 
 ### Sending a message using example scripts
@@ -147,7 +147,7 @@ The source code of send method:
 
 [Here is](https://testnet.bscscan.com/tx/0x0a9adff4ab95fe749668df61f9e124339aa36bd52344e17331f5402dd02de243) example of the `send` transaction in Bscscan.
 Same transaction can be found by txid in [deBridge explorer](
-https://testnet.debridge.finance/transaction?tx=0x0a9adff4ab95fe749668df61f9e124339aa36bd52344e17331f5402dd02de243&chainId=97)
+https://testnet.xbridge.finance/transaction?tx=0x0a9adff4ab95fe749668df61f9e124339aa36bd52344e17331f5402dd02de243&chainId=97)
 In case the execution fee was set, keepers will automatically claim your transaction in the destination chain:
 ![](https://i.imgur.com/G3c55qO.png)
 
@@ -157,7 +157,7 @@ The result of the state changed due to cross-chain interaction can be observed t
 The method of the smart contract that was executed as a result of cross-chain call:
 ![](https://i.imgur.com/61uRSXD.png)
 
-Feel free to reach out to us in the #developer channel of [Discord](http://discord.gg/debridge) to ask any questions.
+Feel free to reach out to us in the #developer channel of [Discord](http://discord.gg/xbridge) to ask any questions.
 
 ## Cross-chain swap
 Set DEBRIDGEGATE_ADDRESS, SENDER_PRIVATE_KEY, ROUTER_ADDRESS in .env file

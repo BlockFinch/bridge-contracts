@@ -1,9 +1,9 @@
-const debridgeInitParams = require("../../assets/debridgeInitParams");
+const xbridgeInitParams = require("../../assets/xbridgeInitParams");
 const { deployProxy, getLastDeployedProxy } = require("../deploy-utils");
 
 module.exports = async function ({ getNamedAccounts, deployments, network }) {
   const { deployer } = await getNamedAccounts();
-  const deployInitParams = debridgeInitParams[network.name];
+  const deployInitParams = xbridgeInitParams[network.name];
   if (!deployInitParams) return;
 
   // const weth = deployInitParams.external.WETH || (await deployments.get("MockWeth")).address;
@@ -12,7 +12,7 @@ module.exports = async function ({ getNamedAccounts, deployments, network }) {
   // await deployProxy("FeeProxy", deployer, [uniswapFactory, weth], true);
 
   const wethAddress = deployInitParams.external.WETH || (await deployments.get("MockWeth")).address;
-  const deBridgeGateInstance = await getLastDeployedProxy("DeBridgeGate", deployer, [
+  const deBridgeGateInstance = await getLastDeployedProxy("XDCBridgeGate", deployer, [
     deployInitParams.excessConfirmations,
     wethAddress,
   ]);

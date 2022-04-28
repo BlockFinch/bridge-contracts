@@ -1,14 +1,14 @@
-const debridgeInitParams = require("../../assets/debridgeInitParams");
+const xbridgeInitParams = require("../../assets/xbridgeInitParams");
 const { deployProxy, waitTx, getLastDeployedProxy } = require("../deploy-utils");
 
 module.exports = async function ({ getNamedAccounts, deployments, network }) {
   const { deployer } = await getNamedAccounts();
   const networkName = network.name;
-  const deployInitParams = debridgeInitParams[networkName];
+  const deployInitParams = xbridgeInitParams[networkName];
   if (!deployInitParams) return;
 
   const wethAddress = deployInitParams.external.WETH || (await deployments.get("MockWeth")).address;
-  const deBridgeGateInstance = await getLastDeployedProxy("DeBridgeGate", deployer, [
+  const deBridgeGateInstance = await getLastDeployedProxy("XDCBridgeGate", deployer, [
     deployInitParams.excessConfirmations,
     wethAddress,
   ]);

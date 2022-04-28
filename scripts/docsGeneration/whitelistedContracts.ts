@@ -2,11 +2,11 @@ import assert from "assert";
 import fs from "fs";
 
 const contractsWhitelistedForDocs = [
-    'transfers/DeBridgeGate.sol',
-    'interfaces/IDeBridgeGate.sol',
+    'transfers/XDCBridgeGate.sol',
+    'interfaces/IXDCBridgeGate.sol',
 
-    'transfers/DeBridgeTokenDeployer.sol',
-    'interfaces/IDeBridgeTokenDeployer.sol',
+    'transfers/XDCBridgeTokenDeployer.sol',
+    'interfaces/IXDCBridgeTokenDeployer.sol',
 
     'transfers/SignatureVerifier.sol',
     'interfaces/ISignatureVerifier.sol',
@@ -22,10 +22,10 @@ const contractsWhitelistedForDocs = [
     'transfers/WethGate.sol',
     'interfaces/IWethGate.sol',
 
-    'periphery/DeBridgeToken.sol',
-    'interfaces/IDeBridgeToken.sol',
+    'periphery/XDCBridgeToken.sol',
+    'interfaces/IXDCBridgeToken.sol',
 
-    'periphery/DeBridgeTokenProxy.sol',
+    'periphery/XDCBridgeTokenProxy.sol',
 
     'periphery/SimpleFeeProxy.sol',
 ];

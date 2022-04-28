@@ -1,10 +1,10 @@
-const debridgeInitParams = require("../../assets/debridgeInitParams");
+const xbridgeInitParams = require("../../assets/xbridgeInitParams");
 const { ethers } = require("hardhat");
 const { FLAGS, getLastDeployedProxy, waitTx } = require("../deploy-utils");
 
 module.exports = async function({getNamedAccounts, deployments, network}) {
   // const { deployer } = await getNamedAccounts();
-  // const deployInitParams = debridgeInitParams[network.name];
+  // const deployInitParams = xbridgeInitParams[network.name];
   // if (!deployInitParams) return;
 
   // const multisig = deployInitParams.deBridgeTokenAdmin;
@@ -47,11 +47,11 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
 
 
   // // --------------------------------
-  // //    DeBridgeTokenDeployer
+  // //    XDCBridgeTokenDeployer
   // // --------------------------------
 
-  // const deBridgeTokenDeployer = await getLastDeployedProxy("DeBridgeTokenDeployer", deployer);
-  // await transferAdminRole(deBridgeTokenDeployer, "DeBridgeTokenDeployer");
+  // const deBridgeTokenDeployer = await getLastDeployedProxy("XDCBridgeTokenDeployer", deployer);
+  // await transferAdminRole(deBridgeTokenDeployer, "XDCBridgeTokenDeployer");
 
 
   // // --------------------------------
@@ -90,11 +90,11 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
 
 
   // // --------------------------------
-  // //    DeBridgeGate
+  // //    XDCBridgeGate
   // // --------------------------------
 
-  // const deBridgeGate = await getLastDeployedProxy("DeBridgeGate", deployer);
-  // await transferAdminRole(deBridgeGate, "DeBridgeGate");
+  // const deBridgeGate = await getLastDeployedProxy("XDCBridgeGate", deployer);
+  // await transferAdminRole(deBridgeGate, "XDCBridgeGate");
 
 
   // // --------------------------------
@@ -105,5 +105,5 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
 };
 
 module.exports.tags = ["08_transfer_admin_role"];
-// remove dependencies. prevent process 06_DeBridgeGateSetup twice
-// module.exports.dependencies = ['06_DeBridgeGateSetup'];
+// remove dependencies. prevent process 06_XDCBridgeGateSetup twice
+// module.exports.dependencies = ['06_XDCBridgeGateSetup'];

@@ -6,7 +6,7 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "../interfaces/ICallProxy.sol";
-import "./forkedInterfaces/IDeBridgeGate.sol";
+import "./forkedInterfaces/IXDCBridgeGate.sol";
 import "../libraries/Flags.sol";
 
 abstract contract BridgeAppBase is Initializable, AccessControlUpgradeable, PausableUpgradeable {
@@ -14,7 +14,7 @@ abstract contract BridgeAppBase is Initializable, AccessControlUpgradeable, Paus
 
     /* ========== STATE VARIABLES ========== */
 
-    IDeBridgeGate public deBridgeGate;
+    IXDCBridgeGate public deBridgeGate;
 
     // chainId => (address => isControlling)
     /// @dev Maps chainId and address on that chain to bool that defines if the address is controlling
@@ -73,7 +73,7 @@ abstract contract BridgeAppBase is Initializable, AccessControlUpgradeable, Paus
 
     /* ========== CONSTRUCTOR  ========== */
 
-    function __BridgeAppBase_init(IDeBridgeGate _deBridgeGate) internal initializer {
+    function __BridgeAppBase_init(IXDCBridgeGate _deBridgeGate) internal initializer {
         __Context_init_unchained();
         __ERC165_init_unchained();
         __AccessControl_init_unchained();
@@ -81,7 +81,7 @@ abstract contract BridgeAppBase is Initializable, AccessControlUpgradeable, Paus
         __BridgeAppBase_init_unchained(_deBridgeGate);
     }
 
-    function __BridgeAppBase_init_unchained(IDeBridgeGate _deBridgeGate) internal initializer {
+    function __BridgeAppBase_init_unchained(IXDCBridgeGate _deBridgeGate) internal initializer {
         deBridgeGate = _deBridgeGate;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
@@ -136,7 +136,7 @@ abstract contract BridgeAppBase is Initializable, AccessControlUpgradeable, Paus
     /// @dev Calculates asset identifier.
     /// @param _chainId Current chain id.
     /// @param _tokenAddress Address of the asset on the other chain.
-    function getDebridgeId(uint256 _chainId, address _tokenAddress) public pure returns (bytes32) {
+    function getXbridgeId(uint256 _chainId, address _tokenAddress) public pure returns (bytes32) {
         return keccak256(abi.encodePacked(_chainId, _tokenAddress));
     }
 

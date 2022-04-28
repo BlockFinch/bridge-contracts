@@ -11,7 +11,7 @@ const MockLinkToken = artifacts.require("MockLinkToken");
 const WethGate = artifacts.require("WethGate");
 const MockInvalidToken = artifacts.require("MockInvalidToken");
 const MockToken = artifacts.require("MockToken");
-const DeBridgeToken = artifacts.require("DeBridgeToken");
+const XDCBridgeToken = artifacts.require("XDCBridgeToken");
 const IUniswapV2Pair = artifacts.require("IUniswapV2Pair");
 const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
 const { toWei } = web3.utils;
@@ -47,8 +47,8 @@ let mintEvents = [];
 let burnEvents = [];
 let claimEvents = [];
 
-const nativeBSCDebridgeId = "0x8ca679b0f7e259a80b1066b4253c3fdc0d9bdbb15c926fd2a5eab0335bf1f745";
-const nativeETHDebridgeId = "0x6ac1b981b4452354ad8bd156fe151bcb91252dea9ed7232af4d0e64b50c09dcf";
+const nativeBSCXbridgeId = "0x8ca679b0f7e259a80b1066b4253c3fdc0d9bdbb15c926fd2a5eab0335bf1f745";
+const nativeETHXbridgeId = "0x6ac1b981b4452354ad8bd156fe151bcb91252dea9ed7232af4d0e64b50c09dcf";
 
 const referralCode = 555;
 const zeroFlag = 0;
@@ -64,7 +64,7 @@ let feesCalculatorETH;
 let feesCalculatorBSC;
 
 const discountsValues = [0, 5000, 10000];
-contract("DeBridgeGate real pipeline mode", function () {
+contract("XDCBridgeGate real pipeline mode", function () {
   before(async function () {
     this.signers = await ethers.getSigners();
     aliceAccount = this.signers[0];
@@ -93,10 +93,10 @@ contract("DeBridgeGate real pipeline mode", function () {
       alice
     );
 
-    const DeBridgeTokenFactory = await ethers.getContractFactory("DeBridgeToken", alice);
-    const DeBridgeTokenDeployerFactory = await ethers.getContractFactory("DeBridgeTokenDeployer", alice);
+    const XDCBridgeTokenFactory = await ethers.getContractFactory("XDCBridgeToken", alice);
+    const XDCBridgeTokenDeployerFactory = await ethers.getContractFactory("XDCBridgeTokenDeployer", alice);
 
-    const DeBridgeGateFactory = await ethers.getContractFactory("MockDeBridgeGate", alice);
+    const XDCBridgeGateFactory = await ethers.getContractFactory("MockXDCBridgeGate", alice);
     const SignatureVerifierFactory = await ethers.getContractFactory("SignatureVerifier", alice);
     const CallProxyFactory = await ethers.getContractFactory("CallProxy", alice);
     const DefiControllerFactory = await ethers.getContractFactory("DefiController", alice);
@@ -234,34 +234,34 @@ contract("DeBridgeGate real pipeline mode", function () {
     await this.signatureVerifierHECO.deployed();
 
     // deploy token implementations
-    this.deBridgeTokenETH = await DeBridgeTokenFactory.deploy();
-    this.deBridgeTokenBSC = await DeBridgeTokenFactory.deploy();
-    this.deBridgeTokenHECO = await DeBridgeTokenFactory.deploy();
+    this.deBridgeTokenETH = await XDCBridgeTokenFactory.deploy();
+    this.deBridgeTokenBSC = await XDCBridgeTokenFactory.deploy();
+    this.deBridgeTokenHECO = await XDCBridgeTokenFactory.deploy();
 
-    // deploy DeBridgeTokenDeployer contracts
+    // deploy XDCBridgeTokenDeployer contracts
     this.deBridgeTokenDeployerETH = await upgrades.deployProxy(
-      DeBridgeTokenDeployerFactory,
+      XDCBridgeTokenDeployerFactory,
       [
         this.deBridgeTokenETH.address,
         alice,
         ZERO_ADDRESS,
       ]);
     this.deBridgeTokenDeployerBSC = await upgrades.deployProxy(
-      DeBridgeTokenDeployerFactory,
+      XDCBridgeTokenDeployerFactory,
       [
         this.deBridgeTokenBSC.address,
         alice,
         ZERO_ADDRESS,
       ]);
     this.deBridgeTokenDeployerHECO = await upgrades.deployProxy(
-      DeBridgeTokenDeployerFactory,
+      XDCBridgeTokenDeployerFactory,
       [
         this.deBridgeTokenHECO.address,
         alice,
         ZERO_ADDRESS,
       ]);
 
-    //-------Deploy DebridgeGate contracts
+    //-------Deploy XbridgeGate contracts
     //   function initialize(
     //     uint256 _excessConfirmations,
     //     address _signatureVerifier,
@@ -270,8 +270,8 @@ contract("DeBridgeGate real pipeline mode", function () {
     //     IFeeProxy _feeProxy,
     //     IDefiController _defiController,
     // )
-    this.debridgeETH = await upgrades.deployProxy(
-      DeBridgeGateFactory,
+    this.xbridgeETH = await upgrades.deployProxy(
+      XDCBridgeGateFactory,
       [
         this.excessConfirmations,
         this.signatureVerifierETH.address,
@@ -287,8 +287,8 @@ contract("DeBridgeGate real pipeline mode", function () {
         kind: "transparent",
       }
     );
-    this.debridgeBSC = await upgrades.deployProxy(
-      DeBridgeGateFactory,
+    this.xbridgeBSC = await upgrades.deployProxy(
+      XDCBridgeGateFactory,
       [
         this.excessConfirmations,
         this.signatureVerifierBSC.address,
@@ -305,8 +305,8 @@ contract("DeBridgeGate real pipeline mode", function () {
       }
     );
 
-    this.debridgeHECO = await upgrades.deployProxy(
-      DeBridgeGateFactory,
+    this.xbridgeHECO = await upgrades.deployProxy(
+      XDCBridgeGateFactory,
       [
         this.excessConfirmations,
         this.signatureVerifierHECO.address,
@@ -323,7 +323,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       }
     );
 
-    await this.debridgeETH.updateChainSupport(
+    await this.xbridgeETH.updateChainSupport(
       [bscChainId, hecoChainId],
       [
         {
@@ -340,7 +340,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       false
     );
 
-    await this.debridgeETH.updateChainSupport(
+    await this.xbridgeETH.updateChainSupport(
       [bscChainId, hecoChainId],
       [
         {
@@ -357,7 +357,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       true
     );
 
-    await this.debridgeBSC.updateChainSupport(
+    await this.xbridgeBSC.updateChainSupport(
       [ethChainId, hecoChainId], //supportedChainIds,
       [
         {
@@ -374,7 +374,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       false
     );
 
-    await this.debridgeBSC.updateChainSupport(
+    await this.xbridgeBSC.updateChainSupport(
       [ethChainId, hecoChainId], //supportedChainIds,
       [
         {
@@ -391,7 +391,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       true
     );
 
-    await this.debridgeHECO.updateChainSupport(
+    await this.xbridgeHECO.updateChainSupport(
       [ethChainId, bscChainId], //supportedChainIds,
       [
         {
@@ -408,7 +408,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       false
     );
 
-    await this.debridgeHECO.updateChainSupport(
+    await this.xbridgeHECO.updateChainSupport(
       [ethChainId, bscChainId], //supportedChainIds,
       [
         {
@@ -428,42 +428,42 @@ contract("DeBridgeGate real pipeline mode", function () {
     // deploy FeesCalculator contracts
     feesCalculatorETH = await upgrades.deployProxy(
       FeesCalculatorFactory,
-      [this.debridgeETH.address],
+      [this.xbridgeETH.address],
     );
     feesCalculatorBSC = await upgrades.deployProxy(
       FeesCalculatorFactory,
-      [this.debridgeBSC.address],
+      [this.xbridgeBSC.address],
     );
 
-    // set debridge address
-    await this.deBridgeTokenDeployerETH.setDebridgeAddress(this.debridgeETH.address);
-    await this.deBridgeTokenDeployerBSC.setDebridgeAddress(this.debridgeBSC.address);
-    await this.deBridgeTokenDeployerHECO.setDebridgeAddress(this.debridgeHECO.address);
+    // set xbridge address
+    await this.deBridgeTokenDeployerETH.setXbridgeAddress(this.xbridgeETH.address);
+    await this.deBridgeTokenDeployerBSC.setXbridgeAddress(this.xbridgeBSC.address);
+    await this.deBridgeTokenDeployerHECO.setXbridgeAddress(this.xbridgeHECO.address);
 
-    await this.signatureVerifierETH.setDebridgeAddress(this.debridgeETH.address);
-    await this.signatureVerifierBSC.setDebridgeAddress(this.debridgeBSC.address);
-    await this.signatureVerifierHECO.setDebridgeAddress(this.debridgeHECO.address);
+    await this.signatureVerifierETH.setXbridgeAddress(this.xbridgeETH.address);
+    await this.signatureVerifierBSC.setXbridgeAddress(this.xbridgeBSC.address);
+    await this.signatureVerifierHECO.setXbridgeAddress(this.xbridgeHECO.address);
 
-    this.linkDebridgeId = await this.debridgeETH.getDebridgeId(ethChainId, this.linkToken.address);
-    this.cakeDebridgeId = await this.debridgeETH.getDebridgeId(bscChainId, this.cakeToken.address);
+    this.linkXbridgeId = await this.xbridgeETH.getXbridgeId(ethChainId, this.linkToken.address);
+    this.cakeXbridgeId = await this.xbridgeETH.getXbridgeId(bscChainId, this.cakeToken.address);
 
-    this.nativeDebridgeIdETH = await this.debridgeETH.getDebridgeId(ethChainId, ZERO_ADDRESS);
-    this.nativeDebridgeIdBSC = await this.debridgeBSC.getDebridgeId(bscChainId, ZERO_ADDRESS);
-    this.nativeDebridgeIdHECO = await this.debridgeHECO.getDebridgeId(hecoChainId, ZERO_ADDRESS);
+    this.nativeXbridgeIdETH = await this.xbridgeETH.getXbridgeId(ethChainId, ZERO_ADDRESS);
+    this.nativeXbridgeIdBSC = await this.xbridgeBSC.getXbridgeId(bscChainId, ZERO_ADDRESS);
+    this.nativeXbridgeIdHECO = await this.xbridgeHECO.getXbridgeId(hecoChainId, ZERO_ADDRESS);
 
-    this.debridgeWethId = await this.debridgeETH.getDebridgeId(ethChainId, this.wethETH.address);
+    this.xbridgeWethId = await this.xbridgeETH.getXbridgeId(ethChainId, this.wethETH.address);
 
-    this.debridgeWethBSCId = await this.debridgeETH.getDebridgeId(bscChainId, this.wethBSC.address);
+    this.xbridgeWethBSCId = await this.xbridgeETH.getXbridgeId(bscChainId, this.wethBSC.address);
 
-    this.debridgeWethHECOId = await this.debridgeETH.getDebridgeId(
+    this.xbridgeWethHECOId = await this.xbridgeETH.getXbridgeId(
       hecoChainId,
       this.wethHECO.address
     );
 
     const DEBRIDGE_GATE_ROLE = await this.callProxy.DEBRIDGE_GATE_ROLE();
-    await this.callProxy.grantRole(DEBRIDGE_GATE_ROLE, this.debridgeETH.address);
-    await this.callProxy.grantRole(DEBRIDGE_GATE_ROLE, this.debridgeBSC.address);
-    await this.callProxy.grantRole(DEBRIDGE_GATE_ROLE, this.debridgeHECO.address);
+    await this.callProxy.grantRole(DEBRIDGE_GATE_ROLE, this.xbridgeETH.address);
+    await this.callProxy.grantRole(DEBRIDGE_GATE_ROLE, this.xbridgeBSC.address);
+    await this.callProxy.grantRole(DEBRIDGE_GATE_ROLE, this.xbridgeHECO.address);
 
     this.non_evm_receivers = [
       // SOL
@@ -492,36 +492,36 @@ contract("DeBridgeGate real pipeline mode", function () {
 
       assert.equal(
         this.signatureVerifierETH.address,
-        await this.debridgeETH.signatureVerifier()
+        await this.xbridgeETH.signatureVerifier()
       );
       assert.equal(
         this.signatureVerifierBSC.address,
-        await this.debridgeBSC.signatureVerifier()
+        await this.xbridgeBSC.signatureVerifier()
       );
       assert.equal(
         this.signatureVerifierHECO.address,
-        await this.debridgeHECO.signatureVerifier()
+        await this.xbridgeHECO.signatureVerifier()
       );
 
-      assert.equal(ZERO_ADDRESS, await this.feeProxyETH.debridgeGate());
-      assert.equal(ZERO_ADDRESS, await this.feeProxyBSC.debridgeGate());
-      assert.equal(ZERO_ADDRESS, await this.feeProxyHECO.debridgeGate());
+      assert.equal(ZERO_ADDRESS, await this.feeProxyETH.xbridgeGate());
+      assert.equal(ZERO_ADDRESS, await this.feeProxyBSC.xbridgeGate());
+      assert.equal(ZERO_ADDRESS, await this.feeProxyHECO.xbridgeGate());
 
-      assert.equal(this.feeProxyETH.address, await this.debridgeETH.feeProxy());
-      assert.equal(this.feeProxyBSC.address, await this.debridgeBSC.feeProxy());
-      assert.equal(this.feeProxyHECO.address, await this.debridgeHECO.feeProxy());
+      assert.equal(this.feeProxyETH.address, await this.xbridgeETH.feeProxy());
+      assert.equal(this.feeProxyBSC.address, await this.xbridgeBSC.feeProxy());
+      assert.equal(this.feeProxyHECO.address, await this.xbridgeHECO.feeProxy());
 
-      // assert.equal(treasury, await this.debridgeETH.treasury());
-      // assert.equal(treasury, await this.debridgeBSC.treasury());
-      // assert.equal(treasury, await this.debridgeHECO.treasury());
+      // assert.equal(treasury, await this.xbridgeETH.treasury());
+      // assert.equal(treasury, await this.xbridgeBSC.treasury());
+      // assert.equal(treasury, await this.xbridgeHECO.treasury());
 
-      assert.equal(this.defiControllerETH.address, await this.debridgeETH.defiController());
-      assert.equal(ZERO_ADDRESS, await this.debridgeBSC.defiController());
-      assert.equal(ZERO_ADDRESS, await this.debridgeHECO.defiController());
+      assert.equal(this.defiControllerETH.address, await this.xbridgeETH.defiController());
+      assert.equal(ZERO_ADDRESS, await this.xbridgeBSC.defiController());
+      assert.equal(ZERO_ADDRESS, await this.xbridgeHECO.defiController());
 
-      assert.equal(this.wethETH.address, await this.debridgeETH.weth());
-      assert.equal(this.wethBSC.address, await this.debridgeBSC.weth());
-      assert.equal(this.wethHECO.address, await this.debridgeHECO.weth());
+      assert.equal(this.wethETH.address, await this.xbridgeETH.weth());
+      assert.equal(this.wethBSC.address, await this.xbridgeBSC.weth());
+      assert.equal(this.wethHECO.address, await this.xbridgeHECO.weth());
     });
 
     it("Initialize oracles", async function () {
@@ -565,51 +565,51 @@ contract("DeBridgeGate real pipeline mode", function () {
     });
 
     it("Update fixed fee for WETH", async function () {
-      const wethDebridgeId = await this.debridgeETH.getDebridgeId(ethChainId, this.wethETH.address);
-      const bscWethDebridgeId = await this.debridgeETH.getDebridgeId(
+      const wethXbridgeId = await this.xbridgeETH.getXbridgeId(ethChainId, this.wethETH.address);
+      const bscWethXbridgeId = await this.xbridgeETH.getXbridgeId(
         bscChainId,
         this.wethBSC.address
       );
-      const hecoWethDebridgeId = await this.debridgeETH.getDebridgeId(
+      const hecoWethXbridgeId = await this.xbridgeETH.getXbridgeId(
         hecoChainId,
         this.wethHECO.address
       );
       //   function updateAssetFixedFees(
-      //     bytes32 _debridgeId,
+      //     bytes32 _xbridgeId,
       //     uint256[] memory _supportedChainIds,
       //     uint256[] memory _assetFeesInfo
       // )
-      await this.debridgeETH.updateAssetFixedFees(
-        wethDebridgeId,
+      await this.xbridgeETH.updateAssetFixedFees(
+        wethXbridgeId,
         [bscChainId, hecoChainId],
         [fixedNativeFeeBNB, fixedNativeFeeHT]
       );
 
-      let fixedFee = await this.debridgeETH.getDebridgeChainAssetFixedFee(wethDebridgeId, bscChainId)
+      let fixedFee = await this.xbridgeETH.getXbridgeChainAssetFixedFee(wethXbridgeId, bscChainId)
       assert.equal(fixedFee.toString(), fixedNativeFeeBNB.toString());
-      fixedFee = await this.debridgeETH.getDebridgeChainAssetFixedFee(wethDebridgeId, hecoChainId)
+      fixedFee = await this.xbridgeETH.getXbridgeChainAssetFixedFee(wethXbridgeId, hecoChainId)
       assert.equal(fixedFee.toString(), fixedNativeFeeHT.toString());
 
-      await this.debridgeBSC.updateAssetFixedFees(
-        bscWethDebridgeId,
+      await this.xbridgeBSC.updateAssetFixedFees(
+        bscWethXbridgeId,
         [ethChainId, hecoChainId],
         [fixedNativeFeeETH, fixedNativeFeeHT]
       );
 
-      fixedFee = await this.debridgeBSC.getDebridgeChainAssetFixedFee(bscWethDebridgeId, ethChainId)
+      fixedFee = await this.xbridgeBSC.getXbridgeChainAssetFixedFee(bscWethXbridgeId, ethChainId)
       assert.equal(fixedFee.toString(), fixedNativeFeeETH.toString());
-      fixedFee = await this.debridgeBSC.getDebridgeChainAssetFixedFee(bscWethDebridgeId, hecoChainId)
+      fixedFee = await this.xbridgeBSC.getXbridgeChainAssetFixedFee(bscWethXbridgeId, hecoChainId)
       assert.equal(fixedFee.toString(), fixedNativeFeeHT.toString());
 
-      await this.debridgeHECO.updateAssetFixedFees(
-        hecoWethDebridgeId,
+      await this.xbridgeHECO.updateAssetFixedFees(
+        hecoWethXbridgeId,
         [ethChainId, bscChainId],
         [fixedNativeFeeHT, fixedNativeFeeBNB]
       );
 
-      fixedFee = await this.debridgeHECO.getDebridgeChainAssetFixedFee(hecoWethDebridgeId, ethChainId)
+      fixedFee = await this.xbridgeHECO.getXbridgeChainAssetFixedFee(hecoWethXbridgeId, ethChainId)
       assert.equal(fixedFee.toString(), fixedNativeFeeHT.toString());
-      fixedFee = await this.debridgeHECO.getDebridgeChainAssetFixedFee(hecoWethDebridgeId, bscChainId)
+      fixedFee = await this.xbridgeHECO.getXbridgeChainAssetFixedFee(hecoWethXbridgeId, bscChainId)
       assert.equal(fixedFee.toString(), fixedNativeFeeBNB.toString());
 
       //TODO: check that we added oracles
@@ -619,72 +619,72 @@ contract("DeBridgeGate real pipeline mode", function () {
   context("Test setting configurations by different users", () => {
     it("should set signatureVerifier if called by the admin", async function () {
       let testAddress = "0x765bDC94443b2D87543ee6BdDEE2208343C8C07A";
-      await this.debridgeETH.setSignatureVerifier(testAddress);
-      assert.equal(testAddress, await this.debridgeETH.signatureVerifier());
+      await this.xbridgeETH.setSignatureVerifier(testAddress);
+      assert.equal(testAddress, await this.xbridgeETH.signatureVerifier());
       //Return to this.signatureVerifierETH.address
-      await this.debridgeETH.setSignatureVerifier(this.signatureVerifierETH.address);
-      assert.equal(this.signatureVerifierETH.address, await this.debridgeETH.signatureVerifier());
+      await this.xbridgeETH.setSignatureVerifier(this.signatureVerifierETH.address);
+      assert.equal(this.signatureVerifierETH.address, await this.xbridgeETH.signatureVerifier());
     });
 
-    it("should set debridgeGate to fee proxy if called by the admin", async function () {
-      await this.feeProxyETH.setDebridgeGate(this.debridgeETH.address.toString());
-      await this.feeProxyBSC.setDebridgeGate(this.debridgeBSC.address.toString());
-      await this.feeProxyHECO.setDebridgeGate(this.debridgeHECO.address.toString());
-      assert.equal(this.debridgeETH.address.toString(), await this.feeProxyETH.debridgeGate());
-      assert.equal(this.debridgeBSC.address.toString(), await this.feeProxyBSC.debridgeGate());
-      assert.equal(this.debridgeHECO.address.toString(), await this.feeProxyHECO.debridgeGate());
+    it("should set xbridgeGate to fee proxy if called by the admin", async function () {
+      await this.feeProxyETH.setXbridgeGate(this.xbridgeETH.address.toString());
+      await this.feeProxyBSC.setXbridgeGate(this.xbridgeBSC.address.toString());
+      await this.feeProxyHECO.setXbridgeGate(this.xbridgeHECO.address.toString());
+      assert.equal(this.xbridgeETH.address.toString(), await this.feeProxyETH.xbridgeGate());
+      assert.equal(this.xbridgeBSC.address.toString(), await this.feeProxyBSC.xbridgeGate());
+      assert.equal(this.xbridgeHECO.address.toString(), await this.feeProxyHECO.xbridgeGate());
     });
     it("should set fee proxy if called by the admin", async function () {
       let testAddress = "0x765bDC94443b2D87543ee6BdDEE2208343C8C07A";
-      await this.debridgeETH.setFeeProxy(testAddress);
-      assert.equal(testAddress, await this.debridgeETH.feeProxy());
+      await this.xbridgeETH.setFeeProxy(testAddress);
+      assert.equal(testAddress, await this.xbridgeETH.feeProxy());
       //restore back
-      await this.debridgeETH.setFeeProxy(this.feeProxyETH.address);
-      assert.equal(this.feeProxyETH.address, await this.debridgeETH.feeProxy());
+      await this.xbridgeETH.setFeeProxy(this.feeProxyETH.address);
+      assert.equal(this.feeProxyETH.address, await this.xbridgeETH.feeProxy());
     });
 
     it("should set defi controller if called by the admin", async function () {
       let testAddress = "0x765bDC94443b2D87543ee6BdDEE2208343C8C07A";
-      await this.debridgeBSC.setDefiController(testAddress);
-      assert.equal(testAddress, await this.debridgeBSC.defiController());
+      await this.xbridgeBSC.setDefiController(testAddress);
+      assert.equal(testAddress, await this.xbridgeBSC.defiController());
       //restore back
-      await this.debridgeBSC.setDefiController(ZERO_ADDRESS);
-      assert.equal(ZERO_ADDRESS, await this.debridgeBSC.defiController());
+      await this.xbridgeBSC.setDefiController(ZERO_ADDRESS);
+      assert.equal(ZERO_ADDRESS, await this.xbridgeBSC.defiController());
     });
 
     it("should set Weth Gate if called by the admin", async function () {
       const gateAddress = this.wethGateETH.address;
-      await this.debridgeETH.setWethGate(gateAddress);
-      assert.equal(gateAddress, await this.debridgeETH.wethGate());
+      await this.xbridgeETH.setWethGate(gateAddress);
+      assert.equal(gateAddress, await this.xbridgeETH.wethGate());
       //restore back
-      await this.debridgeETH.setWethGate(ZERO_ADDRESS);
-      assert.equal(ZERO_ADDRESS, await this.debridgeETH.wethGate());
+      await this.xbridgeETH.setWethGate(ZERO_ADDRESS);
+      assert.equal(ZERO_ADDRESS, await this.xbridgeETH.wethGate());
     });
 
     it("should reject setting signatureVerifier if called by the non-admin", async function () {
       await expectRevert(
-        this.debridgeETH.connect(bobAccount).setSignatureVerifier(ZERO_ADDRESS),
+        this.xbridgeETH.connect(bobAccount).setSignatureVerifier(ZERO_ADDRESS),
         "AdminBadRole()"
       );
     });
 
     it("should reject setting fee proxy if called by the non-admin", async function () {
       await expectRevert(
-        this.debridgeETH.connect(bobAccount).setFeeProxy(ZERO_ADDRESS),
+        this.xbridgeETH.connect(bobAccount).setFeeProxy(ZERO_ADDRESS),
         "AdminBadRole()"
       );
     });
 
     it("should reject setting defi controller if called by the non-admin", async function () {
       await expectRevert(
-        this.debridgeETH.connect(bobAccount).setDefiController(ZERO_ADDRESS),
+        this.xbridgeETH.connect(bobAccount).setDefiController(ZERO_ADDRESS),
         "AdminBadRole()"
       );
     });
 
     it("should reject setting Weth gate if called by the non-admin", async function () {
       await expectRevert(
-        this.debridgeETH.connect(bobAccount).setWethGate(ZERO_ADDRESS),
+        this.xbridgeETH.connect(bobAccount).setWethGate(ZERO_ADDRESS),
         "AdminBadRole()"
       );
     });
@@ -693,8 +693,8 @@ contract("DeBridgeGate real pipeline mode", function () {
   discountsValues.forEach(discount => {
     context(`Test send method from ETH to BSC. discount: ${(discount * 100) / BPS}%`, () => {
       it(`set discount ${(discount * 100) / BPS}% fee for customer alice`, async function () {
-        await this.debridgeETH.updateFeeDiscount(alice, discount, discount);
-        const discountFromContract = await this.debridgeETH.feeDiscount(alice);
+        await this.xbridgeETH.updateFeeDiscount(alice, discount, discount);
+        const discountFromContract = await this.xbridgeETH.feeDiscount(alice);
         expect(discount).to.equal(discountFromContract.discountTransferBps);
         expect(discount).to.equal(discountFromContract.discountFixBps);
       });
@@ -708,11 +708,11 @@ contract("DeBridgeGate real pipeline mode", function () {
         let amount = 10 - 10 ** -MAX_TRANSFER_DECIMALS;
         amount = ethers.utils.parseEther(amount.toFixed(MAX_TRANSFER_DECIMALS));
 
-        const balance = toBN(await this.wethETH.balanceOf(this.debridgeETH.address));
+        const balance = toBN(await this.wethETH.balanceOf(this.xbridgeETH.address));
         const userBalanceBefore = toBN(await web3.eth.getBalance(sender));
 
-        const debridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(this.debridgeWethId);
-        const supportedChainInfo = await this.debridgeETH.getChainToConfig(chainIdTo);
+        const xbridgeFeeInfo = await this.xbridgeETH.getXbridgeFeeInfo(this.xbridgeWethId);
+        const supportedChainInfo = await this.xbridgeETH.getChainToConfig(chainIdTo);
         const fixedNativeFeeAfterDiscount = toBN(supportedChainInfo.fixedNativeFee).mul(BPS-discount).div(BPS);
         let feesWithFix = toBN(supportedChainInfo.transferFeeBps)
           .mul(toBN(amount).sub(fixedNativeFeeAfterDiscount))
@@ -720,7 +720,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         feesWithFix = toBN(feesWithFix).sub(toBN(feesWithFix).mul(discount).div(BPS));
         feesWithFix = feesWithFix.add(fixedNativeFeeAfterDiscount);
 
-        let sendTx = await this.debridgeETH.send(
+        let sendTx = await this.xbridgeETH.send(
           tokenAddress,
           amount,
           chainIdTo,
@@ -752,12 +752,12 @@ contract("DeBridgeGate real pipeline mode", function () {
           0,
         )
 
-        const newBalance = toBN(await this.wethETH.balanceOf(this.debridgeETH.address));
-        const newDebridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(this.debridgeWethId);
+        const newBalance = toBN(await this.wethETH.balanceOf(this.xbridgeETH.address));
+        const newXbridgeFeeInfo = await this.xbridgeETH.getXbridgeFeeInfo(this.xbridgeWethId);
         assert.equal(balance.add(amount).toString(), newBalance.toString());
         assert.equal(
-          debridgeFeeInfo.collectedFees.add(feesWithFix).toString(),
-          newDebridgeFeeInfo.collectedFees.toString()
+          xbridgeFeeInfo.collectedFees.add(feesWithFix).toString(),
+          newXbridgeFeeInfo.collectedFees.toString()
         );
 
         // check user balance
@@ -773,12 +773,12 @@ contract("DeBridgeGate real pipeline mode", function () {
           normalizeTokenAmount(amount.sub(feesWithFix), 18).toString());
 
         //TODO: check that balance was increased
-        // const newDebridgeInfo = await this.debridgeETH.getDebridge(debridgeId);
+        // const newXbridgeInfo = await this.xbridgeETH.getXbridge(xbridgeId);
         // assert.equal(
-        //   debridge.balance
+        //   xbridge.balance
         //     .add(amount)  - fee%
         //     .toString(),
-        //     newDebridgeInfo.balance.toString()
+        //     newXbridgeInfo.balance.toString()
         // );
 
         // TODO: check sender's balance
@@ -786,12 +786,12 @@ contract("DeBridgeGate real pipeline mode", function () {
         // test getNativeInfo mapping to be sure that _addAsset call in send added correct asset
 
         // getNativeInfo[address(0)] should be empty
-        const ethInfo = await this.debridgeETH.getNativeInfo(ZERO_ADDRESS);
+        const ethInfo = await this.xbridgeETH.getNativeInfo(ZERO_ADDRESS);
         assert.equal(ethInfo.nativeChainId, 0);
         assert.equal(ethInfo.nativeAddress, '0x');
 
         // getNativeInfo[WETH] should have correct nativeAddress
-        const wethInfo = await this.debridgeETH.getNativeInfo(this.wethETH.address);
+        const wethInfo = await this.xbridgeETH.getNativeInfo(this.wethETH.address);
         assert.equal(wethInfo.nativeChainId.toNumber(), ethChainId);
         assert.equal(
           wethInfo.nativeAddress.toLowerCase(),
@@ -810,11 +810,11 @@ contract("DeBridgeGate real pipeline mode", function () {
         amount = ethers.utils.parseEther(amount.toFixed(amountDecimals));
         // console.log(amount.toString());
 
-        const balance = toBN(await this.wethETH.balanceOf(this.debridgeETH.address));
+        const balance = toBN(await this.wethETH.balanceOf(this.xbridgeETH.address));
         const userBalanceBefore = toBN(await web3.eth.getBalance(sender));
 
-        const debridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(this.debridgeWethId);
-        const supportedChainInfo = await this.debridgeETH.getChainToConfig(chainIdTo);
+        const xbridgeFeeInfo = await this.xbridgeETH.getXbridgeFeeInfo(this.xbridgeWethId);
+        const supportedChainInfo = await this.xbridgeETH.getChainToConfig(chainIdTo);
         const fixedNativeFeeAfterDiscount = toBN(supportedChainInfo.fixedNativeFee).mul(BPS-discount).div(BPS);
         let feesWithFix = toBN(supportedChainInfo.transferFeeBps)
           .mul(toBN(amount).sub(fixedNativeFeeAfterDiscount))
@@ -822,7 +822,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         feesWithFix = toBN(feesWithFix).sub(toBN(feesWithFix).mul(discount).div(BPS));
         feesWithFix = feesWithFix.add(fixedNativeFeeAfterDiscount);
 
-        let sendTx = await this.debridgeETH.send(
+        let sendTx = await this.xbridgeETH.send(
           tokenAddress,
           amount,
           chainIdTo,
@@ -854,12 +854,12 @@ contract("DeBridgeGate real pipeline mode", function () {
           0,
         )
 
-        const newBalance = toBN(await this.wethETH.balanceOf(this.debridgeETH.address));
-        const newDebridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(this.debridgeWethId);
+        const newBalance = toBN(await this.wethETH.balanceOf(this.xbridgeETH.address));
+        const newXbridgeFeeInfo = await this.xbridgeETH.getXbridgeFeeInfo(this.xbridgeWethId);
         assert.equal(balance.add(amount).toString(), newBalance.toString());
         assert.equal(
-          debridgeFeeInfo.collectedFees.add(feesWithFix).toString(),
-          newDebridgeFeeInfo.collectedFees.toString()
+          xbridgeFeeInfo.collectedFees.add(feesWithFix).toString(),
+          newXbridgeFeeInfo.collectedFees.toString()
         );
 
         // check user balance
@@ -881,7 +881,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       it("should send ERC20 tokens without permit", async function () {
         const token = this.linkToken;
         const tokenAddress = token.address;
-        const chainId = await this.debridgeETH.chainId();
+        const chainId = await this.xbridgeETH.chainId();
         const sender = alice;
         const receiver = bob;
         const chainIdTo = bscChainId;
@@ -896,18 +896,18 @@ contract("DeBridgeGate real pipeline mode", function () {
         await token.mint(sender, amount, {
           from: alice,
         });
-        await token.approve(this.debridgeETH.address, amount, {
+        await token.approve(this.xbridgeETH.address, amount, {
           from: sender,
         });
-        const debridgeId = await this.debridgeETH.getDebridgeId(chainId, tokenAddress);
+        const xbridgeId = await this.xbridgeETH.getXbridgeId(chainId, tokenAddress);
 
-        const balance = toBN(await token.balanceOf(this.debridgeETH.address));
+        const balance = toBN(await token.balanceOf(this.xbridgeETH.address));
         const userBalanceBefore = toBN(await token.balanceOf(sender));
 
-        const debridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(debridgeId);
-        const supportedChainInfo = await this.debridgeETH.getChainToConfig(chainIdTo);
-        const nativeDebridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(
-          this.nativeDebridgeIdETH
+        const xbridgeFeeInfo = await this.xbridgeETH.getXbridgeFeeInfo(xbridgeId);
+        const supportedChainInfo = await this.xbridgeETH.getChainToConfig(chainIdTo);
+        const nativeXbridgeFeeInfo = await this.xbridgeETH.getXbridgeFeeInfo(
+          this.nativeXbridgeIdETH
         );
         let fees = toBN(supportedChainInfo.transferFeeBps).mul(amount).div(BPS);
         fees = toBN(fees).sub(toBN(fees).mul(discount).div(BPS));
@@ -915,7 +915,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         let fixedNativeFee = toBN(supportedChainInfo.fixedNativeFee);
         fixedNativeFee = toBN(fixedNativeFee).sub(toBN(fixedNativeFee).mul(discount).div(BPS));
 
-        let sendTx = await this.debridgeETH.send(
+        let sendTx = await this.xbridgeETH.send(
           tokenAddress,
           amount,
           chainIdTo,
@@ -947,21 +947,21 @@ contract("DeBridgeGate real pipeline mode", function () {
           0,
         )
 
-        const newNativeDebridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(
-          this.nativeDebridgeIdETH
+        const newNativeXbridgeFeeInfo = await this.xbridgeETH.getXbridgeFeeInfo(
+          this.nativeXbridgeIdETH
         );
-        const newBalance = toBN(await token.balanceOf(this.debridgeETH.address));
-        const newDebridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(debridgeId);
+        const newBalance = toBN(await token.balanceOf(this.xbridgeETH.address));
+        const newXbridgeFeeInfo = await this.xbridgeETH.getXbridgeFeeInfo(xbridgeId);
         assert.equal(balance.add(amount).toString(), newBalance.toString());
         assert.equal(
-          debridgeFeeInfo.collectedFees.add(fees).toString(),
-          newDebridgeFeeInfo.collectedFees.toString()
+          xbridgeFeeInfo.collectedFees.add(fees).toString(),
+          newXbridgeFeeInfo.collectedFees.toString()
         );
         assert.equal(
-          nativeDebridgeFeeInfo.collectedFees
+          nativeXbridgeFeeInfo.collectedFees
             .add(toBN(fixedNativeFee))
             .toString(),
-          newNativeDebridgeFeeInfo.collectedFees.toString()
+          newNativeXbridgeFeeInfo.collectedFees.toString()
         );
 
         const userBalanceAfter = toBN(await token.balanceOf(sender));
@@ -976,16 +976,16 @@ contract("DeBridgeGate real pipeline mode", function () {
 
         //TODO: check that balance was increased
         // assert.equal(
-        //   debridge.balance
+        //   xbridge.balance
         //     .add(amount) - fee%
         //     .toString(),
-        //     newDebridgeInfo.balance.toString()
+        //     newXbridgeInfo.balance.toString()
         // );
 
         // TODO: check sender's balance
 
         // getNativeInfo[token_address] should be correct
-        const tokenNativeInfo = await this.debridgeETH.getNativeInfo(tokenAddress);
+        const tokenNativeInfo = await this.xbridgeETH.getNativeInfo(tokenAddress);
         assert.equal(tokenNativeInfo.nativeChainId.toNumber(), ethChainId);
         assert.equal(
           tokenNativeInfo.nativeAddress.toLowerCase(),
@@ -995,23 +995,23 @@ contract("DeBridgeGate real pipeline mode", function () {
 
       it("should send ERC20 tokens with permit", async function () {
         const tokenAddress = this.linkToken.address;
-        const chainId = await this.debridgeETH.chainId();
+        const chainId = await this.xbridgeETH.chainId();
         const receiver = bob;
         const amount = toBN(toWei("100"));
         const chainIdTo = bscChainId;
         await this.linkToken.mint(alice, amount, {
           from: alice,
         });
-        // await this.linkToken.approve(this.debridgeETH.address, amount, {
+        // await this.linkToken.approve(this.xbridgeETH.address, amount, {
         //   from: alice,
         // });
-        const debridgeId = await this.debridgeETH.getDebridgeId(chainId, tokenAddress);
+        const xbridgeId = await this.xbridgeETH.getXbridgeId(chainId, tokenAddress);
 
-        const balance = toBN(await this.linkToken.balanceOf(this.debridgeETH.address));
-        const debridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(debridgeId);
-        const supportedChainInfo = await this.debridgeETH.getChainToConfig(chainIdTo);
-        const nativeDebridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(
-          this.nativeDebridgeIdETH
+        const balance = toBN(await this.linkToken.balanceOf(this.xbridgeETH.address));
+        const xbridgeFeeInfo = await this.xbridgeETH.getXbridgeFeeInfo(xbridgeId);
+        const supportedChainInfo = await this.xbridgeETH.getChainToConfig(chainIdTo);
+        const nativeXbridgeFeeInfo = await this.xbridgeETH.getXbridgeFeeInfo(
+          this.nativeXbridgeIdETH
         );
         let fees = toBN(supportedChainInfo.transferFeeBps).mul(amount).div(BPS);
         fees = toBN(fees).sub(toBN(fees).mul(discount).div(BPS));
@@ -1022,13 +1022,13 @@ contract("DeBridgeGate real pipeline mode", function () {
         const permit = await permitWithDeadline(
           this.linkToken,
           alice,
-          this.debridgeETH.address,
+          this.xbridgeETH.address,
           amount,
           toBN(MAX_UINT256),
           alicePrivKey,
         );
 
-        let sendTx = await this.debridgeETH.send(
+        let sendTx = await this.xbridgeETH.send(
           tokenAddress,
           amount,
           chainIdTo,
@@ -1060,29 +1060,29 @@ contract("DeBridgeGate real pipeline mode", function () {
           0,
         )
 
-        const newNativeDebridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(
-          this.nativeDebridgeIdETH
+        const newNativeXbridgeFeeInfo = await this.xbridgeETH.getXbridgeFeeInfo(
+          this.nativeXbridgeIdETH
         );
-        const newBalance = toBN(await this.linkToken.balanceOf(this.debridgeETH.address));
-        const newDebridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(debridgeId);
+        const newBalance = toBN(await this.linkToken.balanceOf(this.xbridgeETH.address));
+        const newXbridgeFeeInfo = await this.xbridgeETH.getXbridgeFeeInfo(xbridgeId);
         assert.equal(balance.add(amount).toString(), newBalance.toString());
         assert.equal(
-          debridgeFeeInfo.collectedFees.add(fees).toString(),
-          newDebridgeFeeInfo.collectedFees.toString()
+          xbridgeFeeInfo.collectedFees.add(fees).toString(),
+          newXbridgeFeeInfo.collectedFees.toString()
         );
         assert.equal(
-          nativeDebridgeFeeInfo.collectedFees
+          nativeXbridgeFeeInfo.collectedFees
             .add(toBN(fixedNativeFee))
             .toString(),
-          newNativeDebridgeFeeInfo.collectedFees.toString()
+          newNativeXbridgeFeeInfo.collectedFees.toString()
         );
 
         //TODO: check that balance was increased
         // assert.equal(
-        //   debridge.balance
+        //   xbridge.balance
         //     .add(amount) - fee%
         //     .toString(),
-        //     newDebridgeInfo.balance.toString()
+        //     newXbridgeInfo.balance.toString()
         // );
 
         // TODO: check sender's balance
@@ -1098,7 +1098,7 @@ contract("DeBridgeGate real pipeline mode", function () {
 
         const balance = toBN(await web3.eth.getBalance(sender));
 
-        const tx = await this.debridgeETH.send(
+        const tx = await this.xbridgeETH.send(
           tokenAddress,
           amount,
           chainIdTo,
@@ -1138,19 +1138,19 @@ contract("DeBridgeGate real pipeline mode", function () {
         await token.mint(sender, amount, {
           from: alice,
         });
-        await token.approve(this.debridgeETH.address, amount, {
+        await token.approve(this.xbridgeETH.address, amount, {
           from: alice,
         });
 
         const balance = toBN(await web3.eth.getBalance(sender));
 
-        const supportedChainInfo = await this.debridgeETH.getChainToConfig(chainIdTo);
+        const supportedChainInfo = await this.xbridgeETH.getChainToConfig(chainIdTo);
         let fixedNativeFee = toBN(supportedChainInfo.fixedNativeFee);
         fixedNativeFee = fixedNativeFee.sub(toBN(fixedNativeFee).mul(discount).div(BPS));
         const extraNativeFee = toBN(toWei("0.1"));
         const sendedNativeFee = fixedNativeFee.add(extraNativeFee);
 
-        const tx = await this.debridgeETH.send(
+        const tx = await this.xbridgeETH.send(
           token.address,
           amount,
           chainIdTo,
@@ -1177,7 +1177,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         const amount = toBN(toWei("1"));
         const chainIdTo = 9999;
         await expectRevert(
-          this.debridgeETH.send(
+          this.xbridgeETH.send(
             tokenAddress,
             amount,
             chainIdTo,
@@ -1203,7 +1203,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         const amount = toBN(toWei("1"));
         const chainIdTo = bscChainId;
         await expectRevert(
-          this.debridgeETH.send(
+          this.xbridgeETH.send(
             tokenAddress,
             amount,
             chainIdTo,
@@ -1223,7 +1223,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       it("should support non EVM receiver parameter", async function () {
         const amount = toBN(toWei("1"));
         for (const receiver of this.non_evm_receivers) {
-          const tx = await this.debridgeETH.send(
+          const tx = await this.xbridgeETH.send(
             ZERO_ADDRESS,
             amount,
             bscChainId,
@@ -1260,7 +1260,7 @@ contract("DeBridgeGate real pipeline mode", function () {
 
   context("Test managing assets", () => {
     before(async function () {
-      currentChainId = await this.debridgeETH.chainId();
+      currentChainId = await this.xbridgeETH.chainId();
       const newSupply = toWei("100");
       await this.linkToken.mint(alice, newSupply, {
         from: alice,
@@ -1272,19 +1272,19 @@ contract("DeBridgeGate real pipeline mode", function () {
 
     it("should revert deploying new asset without signatures", async function() {
       await expectRevert(
-        this.debridgeBSC.deployNewAsset(this.wethETH.address, bscChainId, "Wrapped ETH", "deETH", 18, []),
+        this.xbridgeBSC.deployNewAsset(this.wethETH.address, bscChainId, "Wrapped ETH", "deETH", 18, []),
         "NotConfirmedByRequiredOracles()");
       await expectRevert(
-        this.debridgeBSC.deployNewAsset(this.wethETH.address, hecoChainId, "Wrapped HT", "deHT", 18, []),
+        this.xbridgeBSC.deployNewAsset(this.wethETH.address, hecoChainId, "Wrapped HT", "deHT", 18, []),
         "NotConfirmedByRequiredOracles()");
       await expectRevert(
-        this.debridgeHECO.deployNewAsset(this.wethETH.address, ethChainId, "Wrapped ETH", "deETH", 18, []),
+        this.xbridgeHECO.deployNewAsset(this.wethETH.address, ethChainId, "Wrapped ETH", "deETH", 18, []),
         "NotConfirmedByRequiredOracles()");
       await expectRevert(
-        this.debridgeHECO.deployNewAsset(this.cakeToken.address, bscChainId, "PancakeSwap Token", "Cake", 18, []),
+        this.xbridgeHECO.deployNewAsset(this.cakeToken.address, bscChainId, "PancakeSwap Token", "Cake", 18, []),
         "NotConfirmedByRequiredOracles()");
       await expectRevert(
-        this.debridgeHECO.deployNewAsset(this.wethBSC.address, bscChainId, "Wrapped BNB", "deBNB", 18, []),
+        this.xbridgeHECO.deployNewAsset(this.wethBSC.address, bscChainId, "Wrapped BNB", "deBNB", 18, []),
         "NotConfirmedByRequiredOracles()");
     });
 
@@ -1296,28 +1296,28 @@ contract("DeBridgeGate real pipeline mode", function () {
       const name = await this.linkToken.name();
       const symbol = await this.linkToken.symbol();
       const decimals = (await this.linkToken.decimals()).toString();
-      const debridgeId = await this.debridgeBSC.getDebridgeId(chainId, tokenAddress);
+      const xbridgeId = await this.xbridgeBSC.getXbridgeId(chainId, tokenAddress);
 
-      const deployId = await this.debridgeBSC.getDeployId(
-        debridgeId,
+      const deployId = await this.xbridgeBSC.getDeployId(
+        xbridgeId,
         name,
         symbol,
         decimals
       );
       const deploySignatures = await submissionSignatures(bscWeb3, oracleKeys, deployId);
 
-      await this.debridgeBSC.updateAsset(debridgeId, maxAmount, minReservesBps, amountThreshold);
-      const debridge = await this.debridgeBSC.getDebridge(debridgeId);
-      const debridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(debridgeId);
-      assert.equal(debridge.maxAmount.toString(), maxAmount);
-      assert.equal(debridgeFeeInfo.collectedFees.toString(), "0");
-      assert.equal(debridge.balance.toString(), "0");
-      assert.equal(debridge.minReservesBps.toString(), minReservesBps);
+      await this.xbridgeBSC.updateAsset(xbridgeId, maxAmount, minReservesBps, amountThreshold);
+      const xbridge = await this.xbridgeBSC.getXbridge(xbridgeId);
+      const xbridgeFeeInfo = await this.xbridgeBSC.getXbridgeFeeInfo(xbridgeId);
+      assert.equal(xbridge.maxAmount.toString(), maxAmount);
+      assert.equal(xbridgeFeeInfo.collectedFees.toString(), "0");
+      assert.equal(xbridge.balance.toString(), "0");
+      assert.equal(xbridge.minReservesBps.toString(), minReservesBps);
 
-      assert.equal(await this.debridgeBSC.getAmountThreshold(debridgeId), amountThreshold);
+      assert.equal(await this.xbridgeBSC.getAmountThreshold(xbridgeId), amountThreshold);
 
       // Deploy tokens
-      let tx = await this.debridgeBSC.deployNewAsset(tokenAddress, chainId, name, symbol, decimals, deploySignatures);
+      let tx = await this.xbridgeBSC.deployNewAsset(tokenAddress, chainId, name, symbol, decimals, deploySignatures);
       let receipt = await tx.wait();
       let pairAddedEvent = receipt.events.find((x) => {
           return x.event == "PairAdded";
@@ -1332,9 +1332,9 @@ contract("DeBridgeGate real pipeline mode", function () {
       let tokenName = "Wrapped ETH";
       let tokenSymbol = "WETH";
       let tokenDecimals = 18;
-      let debridgeId = await this.debridgeBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
-      let deployId = await this.debridgeBSC.getDeployId(
-        debridgeId,
+      let xbridgeId = await this.xbridgeBSC.getXbridgeId(tokenNativeChainId, tokenNativeAddress);
+      let deployId = await this.xbridgeBSC.getDeployId(
+        xbridgeId,
         tokenName,
         tokenSymbol,
         tokenDecimals
@@ -1343,7 +1343,7 @@ contract("DeBridgeGate real pipeline mode", function () {
 
       //Override name/sybmol
       await this.deBridgeTokenDeployerBSC.setOverridedTokenInfo(
-        [debridgeId],
+        [xbridgeId],
         [
           {
             accept: true,
@@ -1353,7 +1353,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         ]
       );
 
-      let tx =  await this.debridgeBSC.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures);
+      let tx =  await this.xbridgeBSC.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures);
       let receipt = await tx.wait();
       let pairAddedEvent = receipt.events.find((x) => {
           return x.event == "PairAdded";
@@ -1361,7 +1361,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       deETHAddressInBSC = pairAddedEvent.args.tokenAddress;
       // console.log(`deETHAddressInBSC ${deETHAddressInBSC}`);
 
-      tx =  await this.debridgeHECO.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures);
+      tx =  await this.xbridgeHECO.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures);
       receipt = await tx.wait();
       pairAddedEvent = receipt.events.find((x) => {
           return x.event == "PairAdded";
@@ -1374,15 +1374,15 @@ contract("DeBridgeGate real pipeline mode", function () {
       tokenName = "Wrapped HT";
       tokenSymbol = "WHT";
       tokenDecimals = 18;
-      debridgeId = await this.debridgeBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
-      deployId = await this.debridgeBSC.getDeployId(
-        debridgeId,
+      xbridgeId = await this.xbridgeBSC.getXbridgeId(tokenNativeChainId, tokenNativeAddress);
+      deployId = await this.xbridgeBSC.getDeployId(
+        xbridgeId,
         tokenName,
         tokenSymbol,
         tokenDecimals
       );
       deploySignatures = await submissionSignatures(bscWeb3, oracleKeys, deployId);
-      tx =  await this.debridgeBSC.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures);
+      tx =  await this.xbridgeBSC.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures);
       receipt = await tx.wait();
       pairAddedEvent = receipt.events.find((x) => {
           return x.event == "PairAdded";
@@ -1396,15 +1396,15 @@ contract("DeBridgeGate real pipeline mode", function () {
       tokenName = "PancakeSwap Token";
       tokenSymbol = "Cake";
       tokenDecimals = 18;
-      debridgeId = await this.debridgeBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
-      deployId = await this.debridgeBSC.getDeployId(
-        debridgeId,
+      xbridgeId = await this.xbridgeBSC.getXbridgeId(tokenNativeChainId, tokenNativeAddress);
+      deployId = await this.xbridgeBSC.getDeployId(
+        xbridgeId,
         tokenName,
         tokenSymbol,
         tokenDecimals
       );
       deploySignatures = await submissionSignatures(bscWeb3, oracleKeys, deployId);
-      tx =  await this.debridgeHECO.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures);
+      tx =  await this.xbridgeHECO.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures);
       receipt = await tx.wait();
       pairAddedEvent = receipt.events.find((x) => {
           return x.event == "PairAdded";
@@ -1418,15 +1418,15 @@ contract("DeBridgeGate real pipeline mode", function () {
       tokenName = "Wrapped BNB";
       tokenSymbol = "WBNB";
       tokenDecimals = 18;
-      debridgeId = await this.debridgeBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
-      deployId = await this.debridgeBSC.getDeployId(
-        debridgeId,
+      xbridgeId = await this.xbridgeBSC.getXbridgeId(tokenNativeChainId, tokenNativeAddress);
+      deployId = await this.xbridgeBSC.getDeployId(
+        xbridgeId,
         tokenName,
         tokenSymbol,
         tokenDecimals
       );
       deploySignatures = await submissionSignatures(bscWeb3, oracleKeys, deployId);
-      tx =  await this.debridgeHECO.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures);
+      tx =  await this.xbridgeHECO.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures);
       receipt = await tx.wait();
       pairAddedEvent = receipt.events.find((x) => {
           return x.event == "PairAdded";
@@ -1440,21 +1440,21 @@ contract("DeBridgeGate real pipeline mode", function () {
       tokenName = "";
       tokenSymbol = "NONAME";
       tokenDecimals = 18;
-      debridgeId = await this.debridgeBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
-      deployId = await this.debridgeBSC.getDeployId(
-        debridgeId,
+      xbridgeId = await this.xbridgeBSC.getXbridgeId(tokenNativeChainId, tokenNativeAddress);
+      deployId = await this.xbridgeBSC.getDeployId(
+        xbridgeId,
         tokenName,
         tokenSymbol,
         tokenDecimals
       );
       deploySignatures = await submissionSignatures(bscWeb3, oracleKeys, deployId);
-      tx =  await this.debridgeBSC.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures);
+      tx =  await this.xbridgeBSC.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures);
       receipt = await tx.wait();
       pairAddedEvent = receipt.events.find((x) => {
           return x.event == "PairAdded";
       });
       const deEmptyNameTokenAddressInBSC = pairAddedEvent.args.tokenAddress;
-      const deEmptyNameToken = await DeBridgeToken.at(deEmptyNameTokenAddressInBSC);
+      const deEmptyNameToken = await XDCBridgeToken.at(deEmptyNameTokenAddressInBSC);
       assert.equal( await deEmptyNameToken.symbol(), "deNONAME");
       // detoken name should use symbol because original name is empty
       assert.equal( await deEmptyNameToken.name(), "deBridge NONAME");
@@ -1463,10 +1463,10 @@ contract("DeBridgeGate real pipeline mode", function () {
       // console.log(`deBNBAddressInHECO ${deBNBAddressInHECO}`);
 
       //Check that new deployed token with correct values
-      const wethDebridgeId =  await this.debridgeBSC.getDebridgeId(ethChainId, this.wethETH.address);
-      const wethDebridge = await this.debridgeBSC.getDebridge(wethDebridgeId);
-      const deWethTokenAddress = wethDebridge.tokenAddress;
-      const deBridgeTokenInstance = await DeBridgeToken.at(deWethTokenAddress);
+      const wethXbridgeId =  await this.xbridgeBSC.getXbridgeId(ethChainId, this.wethETH.address);
+      const wethXbridge = await this.xbridgeBSC.getXbridge(wethXbridgeId);
+      const deWethTokenAddress = wethXbridge.tokenAddress;
+      const deBridgeTokenInstance = await XDCBridgeToken.at(deWethTokenAddress);
       // console.log(deWethTokenAddress);
       // console.log(await deBridgeTokenInstance.symbol());
       // console.log(await deBridgeTokenInstance.name());
@@ -1476,7 +1476,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       assert.equal( (await deBridgeTokenInstance.decimals()).toString(), "18");
 
 
-      const deBNBInHecoTokenInstance = await DeBridgeToken.at(deBNBAddressInHECO);
+      const deBNBInHecoTokenInstance = await XDCBridgeToken.at(deBNBAddressInHECO);
       assert.equal( await deBNBInHecoTokenInstance.symbol(), "deWBNB");
       assert.equal( await deBNBInHecoTokenInstance.name(), "deBridge Wrapped BNB");
       assert.equal( (await deBNBInHecoTokenInstance.decimals()).toString(), "18");
@@ -1488,42 +1488,42 @@ contract("DeBridgeGate real pipeline mode", function () {
       let tokenName = "Wrapped ETH";
       let tokenSymbol = "WETH";
       let tokenDecimals = 18;
-      let debridgeId = await this.debridgeBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
-      let deployId = await this.debridgeBSC.getDeployId(
-        debridgeId,
+      let xbridgeId = await this.xbridgeBSC.getXbridgeId(tokenNativeChainId, tokenNativeAddress);
+      let deployId = await this.xbridgeBSC.getDeployId(
+        xbridgeId,
         tokenName,
         tokenSymbol,
         tokenDecimals
       );
       let deploySignatures = await submissionSignatures(bscWeb3, oracleKeys, deployId);
       await expectRevert(
-        this.debridgeBSC.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures),
+        this.xbridgeBSC.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures),
         "AssetAlreadyExist()");
     });
 
-    it("should have same output for getDebridgeId/getbDebridgeId", async function () {
-      const chainIdFrom = await this.debridgeETH.chainId();
-      // const chainIdTo = await this.debridgeBSC.chainId();
-      const nativeDebridgeIdFrom = await this.debridgeETH.getDebridgeId(chainIdFrom, ZERO_ADDRESS);
-      const nativeDebridgeIdTo = await this.debridgeETH.getbDebridgeId(chainIdFrom, ZERO_ADDRESS);
-      assert.equal(nativeDebridgeIdFrom, nativeDebridgeIdTo);
+    it("should have same output for getXbridgeId/getbXbridgeId", async function () {
+      const chainIdFrom = await this.xbridgeETH.chainId();
+      // const chainIdTo = await this.xbridgeBSC.chainId();
+      const nativeXbridgeIdFrom = await this.xbridgeETH.getXbridgeId(chainIdFrom, ZERO_ADDRESS);
+      const nativeXbridgeIdTo = await this.xbridgeETH.getbXbridgeId(chainIdFrom, ZERO_ADDRESS);
+      assert.equal(nativeXbridgeIdFrom, nativeXbridgeIdTo);
 
-      const tokenDebridgeIdFrom = await this.debridgeETH.getDebridgeId(chainIdFrom, this.linkToken.address);
-      const tokenDebridgeIdTo = await this.debridgeETH.getbDebridgeId(chainIdFrom, this.linkToken.address);
-      assert.equal(tokenDebridgeIdFrom, tokenDebridgeIdTo);
+      const tokenXbridgeIdFrom = await this.xbridgeETH.getXbridgeId(chainIdFrom, this.linkToken.address);
+      const tokenXbridgeIdTo = await this.xbridgeETH.getbXbridgeId(chainIdFrom, this.linkToken.address);
+      assert.equal(tokenXbridgeIdFrom, tokenXbridgeIdTo);
     });
   });
 
   context("Test mint method (BSC network)", () => {
     before(async function () {
-      this.debridgeWethId = await this.debridgeETH.getDebridgeId(ethChainId, this.wethETH.address);
+      this.xbridgeWethId = await this.xbridgeETH.getXbridgeId(ethChainId, this.wethETH.address);
       this.nativeSubmission = sentEvents.find((x) => {
-        return x.args.debridgeId == this.debridgeWethId;
+        return x.args.xbridgeId == this.xbridgeWethId;
       });
       this.nativeSubmissionId = this.nativeSubmission.args.submissionId;
 
       this.linkSubmission = sentEvents.find((x) => {
-        return x.args.debridgeId == this.linkDebridgeId;
+        return x.args.xbridgeId == this.linkXbridgeId;
       });
       this.linkSubmissionId = this.linkSubmission.args.submissionId;
     });
@@ -1532,8 +1532,8 @@ contract("DeBridgeGate real pipeline mode", function () {
       let signatures = await submissionSignatures(bscWeb3, oracleKeys.slice(1, oracleKeys.length), this.linkSubmissionId);
 
       await expectRevert(
-        this.debridgeBSC.claim(
-          this.debridgeWethId,
+        this.xbridgeBSC.claim(
+          this.xbridgeWethId,
           this.nativeSubmission.args.amount,
           ethChainId,
           this.nativeSubmission.args.receiver,
@@ -1552,8 +1552,8 @@ contract("DeBridgeGate real pipeline mode", function () {
       let signatures = await submissionSignatures(bscWeb3, oracleKeys.slice(1, oracleKeys.length), this.linkSubmissionId);
 
       await expectRevert(
-        this.debridgeBSC.claim(
-          this.debridgeWethId,
+        this.xbridgeBSC.claim(
+          this.xbridgeWethId,
           this.nativeSubmission.args.amount,
           8888,
           this.nativeSubmission.args.receiver,
@@ -1570,22 +1570,22 @@ contract("DeBridgeGate real pipeline mode", function () {
 
     it("update reduce ExcessConfirmations if called by the admin", async function () {
       let newExcessConfirmations = 3;
-      await this.debridgeBSC.updateExcessConfirmations(newExcessConfirmations, {
+      await this.xbridgeBSC.updateExcessConfirmations(newExcessConfirmations, {
         from: alice,
       });
-      assert.equal(await this.debridgeBSC.excessConfirmations(), newExcessConfirmations);
+      assert.equal(await this.xbridgeBSC.excessConfirmations(), newExcessConfirmations);
     });
 
     it("should reject when the submission is blocked", async function () {
-      await this.debridgeBSC.blockSubmission([this.nativeSubmissionId], true, {
+      await this.xbridgeBSC.blockSubmission([this.nativeSubmissionId], true, {
         from: alice,
       });
-      assert.equal(await this.debridgeBSC.isBlockedSubmission(this.nativeSubmissionId), true);
+      assert.equal(await this.xbridgeBSC.isBlockedSubmission(this.nativeSubmissionId), true);
       let signatures = await submissionSignatures(bscWeb3, oracleKeys, this.nativeSubmissionId);
 
       await expectRevert(
-        this.debridgeBSC.claim(
-          this.debridgeWethId,
+        this.xbridgeBSC.claim(
+          this.xbridgeWethId,
           this.nativeSubmission.args.amount,
           ethChainId,
           this.nativeSubmission.args.receiver,
@@ -1601,17 +1601,17 @@ contract("DeBridgeGate real pipeline mode", function () {
     });
 
     it("should unblock the submission by admin", async function () {
-      await this.debridgeBSC.blockSubmission([this.nativeSubmissionId], false, {
+      await this.xbridgeBSC.blockSubmission([this.nativeSubmissionId], false, {
         from: alice,
       });
-      assert.equal(await this.debridgeBSC.isBlockedSubmission(this.nativeSubmissionId), false);
+      assert.equal(await this.xbridgeBSC.isBlockedSubmission(this.nativeSubmissionId), false);
     });
 
     it("should mint (deETH) when the submission is approved", async function () {
       const balance = toBN("0");
       const receiver = this.nativeSubmission.args.receiver;
-      const submissionId = await this.debridgeBSC.getSubmissionId(
-        this.debridgeWethId,
+      const submissionId = await this.xbridgeBSC.getSubmissionId(
+        this.xbridgeWethId,
         ethChainId,
         bscChainId,
         this.nativeSubmission.args.amount,
@@ -1623,8 +1623,8 @@ contract("DeBridgeGate real pipeline mode", function () {
 
       let signatures = await submissionSignatures(bscWeb3, oracleKeys, submissionId);
 
-      await this.debridgeBSC.claim(
-        this.debridgeWethId,
+      await this.xbridgeBSC.claim(
+        this.xbridgeWethId,
         this.nativeSubmission.args.amount,
         ethChainId,
         receiver,
@@ -1635,22 +1635,22 @@ contract("DeBridgeGate real pipeline mode", function () {
           from: alice,
         }
       );
-      const debridgeInfo = await this.debridgeBSC.getDebridge(this.debridgeWethId);
-      const deBridgeToken = await DeBridgeToken.at(debridgeInfo.tokenAddress);
+      const xbridgeInfo = await this.xbridgeBSC.getXbridge(this.xbridgeWethId);
+      const deBridgeToken = await XDCBridgeToken.at(xbridgeInfo.tokenAddress);
       const newBalance = toBN(await deBridgeToken.balanceOf(receiver));
 
 
-      const isSubmissionUsed = await this.debridgeBSC.isSubmissionUsed(submissionId);
+      const isSubmissionUsed = await this.xbridgeBSC.isSubmissionUsed(submissionId);
       assert.equal(
         balance.add(this.nativeSubmission.args.amount).toString(),
         newBalance.toString()
       );
       assert.ok(isSubmissionUsed);
 
-      const externalIsSubmissionUsed = await this.mockExternalContract.readIsSubmissionUsed(this.debridgeBSC.address, submissionId);
+      const externalIsSubmissionUsed = await this.mockExternalContract.readIsSubmissionUsed(this.xbridgeBSC.address, submissionId);
       assert.ok(externalIsSubmissionUsed);
 
-      const nativeTokenInfo = await this.debridgeBSC.getNativeInfo(debridgeInfo.tokenAddress);
+      const nativeTokenInfo = await this.xbridgeBSC.getNativeInfo(xbridgeInfo.tokenAddress);
       assert.equal(ethChainId.toString(), nativeTokenInfo.nativeChainId.toString());
       assert.equal(this.wethETH.address.toLowerCase(), nativeTokenInfo.nativeAddress.toString());
     });
@@ -1658,8 +1658,8 @@ contract("DeBridgeGate real pipeline mode", function () {
     it("should mint (deLink) when the submission is approved ", async function () {
       const balance = toBN("0");
       let signatures = await submissionSignatures(bscWeb3, oracleKeys, this.linkSubmissionId);
-      await this.debridgeBSC.claim(
-        this.linkDebridgeId,
+      await this.xbridgeBSC.claim(
+        this.linkXbridgeId,
         this.linkSubmission.args.amount,
         ethChainId,
         this.linkSubmission.args.receiver,
@@ -1670,25 +1670,25 @@ contract("DeBridgeGate real pipeline mode", function () {
           from: alice,
         }
       );
-      const debridgeInfo = await this.debridgeBSC.getDebridge(this.linkDebridgeId);
-      const deBridgeToken = await DeBridgeToken.at(debridgeInfo.tokenAddress);
+      const xbridgeInfo = await this.xbridgeBSC.getXbridge(this.linkXbridgeId);
+      const deBridgeToken = await XDCBridgeToken.at(xbridgeInfo.tokenAddress);
       const newBalance = toBN(await deBridgeToken.balanceOf(this.linkSubmission.args.receiver));
-      const submissionId = await this.debridgeBSC.getSubmissionId(
-        this.linkDebridgeId,
+      const submissionId = await this.xbridgeBSC.getSubmissionId(
+        this.linkXbridgeId,
         ethChainId,
         bscChainId,
         this.linkSubmission.args.amount,
         this.linkSubmission.args.receiver,
         this.linkSubmission.args.nonce
       );
-      const isSubmissionUsed = await this.debridgeBSC.isSubmissionUsed(submissionId);
+      const isSubmissionUsed = await this.xbridgeBSC.isSubmissionUsed(submissionId);
       assert.equal(balance.add(this.linkSubmission.args.amount).toString(), newBalance.toString());
       assert.ok(isSubmissionUsed);
 
-      const externalIsSubmissionUsed = await this.mockExternalContract.readIsSubmissionUsed(this.debridgeBSC.address, submissionId);
+      const externalIsSubmissionUsed = await this.mockExternalContract.readIsSubmissionUsed(this.xbridgeBSC.address, submissionId);
       assert.ok(externalIsSubmissionUsed);
 
-      const nativeTokenInfo = await this.debridgeBSC.getNativeInfo(debridgeInfo.tokenAddress);
+      const nativeTokenInfo = await this.xbridgeBSC.getNativeInfo(xbridgeInfo.tokenAddress);
       assert.equal(ethChainId.toString(), nativeTokenInfo.nativeChainId.toString());
       assert.equal(this.linkToken.address.toLowerCase(), nativeTokenInfo.nativeAddress.toString());
     });
@@ -1698,8 +1698,8 @@ contract("DeBridgeGate real pipeline mode", function () {
       let signatures = await submissionSignatures(bscWeb3, oracleKeys, this.nativeSubmissionId);
 
       await expectRevert(
-        this.debridgeBSC.claim(
-          this.debridgeWethId,
+        this.xbridgeBSC.claim(
+          this.xbridgeWethId,
           this.nativeSubmission.args.amount,
           ethChainId,
           this.nativeSubmission.args.receiver,
@@ -1717,8 +1717,8 @@ contract("DeBridgeGate real pipeline mode", function () {
     it("should reject minting twice", async function () {
       let signatures = await submissionSignatures(bscWeb3, oracleKeys, this.nativeSubmissionId);
       await expectRevert(
-        this.debridgeBSC.claim(
-          this.debridgeWethId,
+        this.xbridgeBSC.claim(
+          this.xbridgeWethId,
           this.nativeSubmission.args.amount,
           ethChainId,
           this.nativeSubmission.args.receiver,
@@ -1739,8 +1739,8 @@ contract("DeBridgeGate real pipeline mode", function () {
       before(async function () {});
 
       it(`set discount ${(discount * 100) / BPS}% fee for customer bob`, async function () {
-        await this.debridgeBSC.updateFeeDiscount(bob, discount, discount);
-        const discountFromContract = await this.debridgeBSC.feeDiscount(bob);
+        await this.xbridgeBSC.updateFeeDiscount(bob, discount, discount);
+        const discountFromContract = await this.xbridgeBSC.feeDiscount(bob);
         expect(discount).to.equal(discountFromContract.discountTransferBps);
         expect(discount).to.equal(discountFromContract.discountFixBps);
       });
@@ -1752,31 +1752,31 @@ contract("DeBridgeGate real pipeline mode", function () {
           const receiver = bob;
           const amount = toBN(toWei("1"));
           // console.log(currentToken);
-          const nativeInfo = await this.debridgeBSC.getNativeInfo(currentToken);
-          const debridgeId = await this.debridgeBSC.getDebridgeId(nativeInfo.nativeChainId, nativeInfo.nativeAddress);
-          // console.log(debridgeId);
-          // console.log(`debridgeWethId ${this.debridgeWethId}`);
-          const debridgeInfo = await this.debridgeBSC.getDebridge(debridgeId);
-          const debridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(debridgeId);
-          const deBridgeToken = await DeBridgeToken.at(debridgeInfo.tokenAddress);
+          const nativeInfo = await this.xbridgeBSC.getNativeInfo(currentToken);
+          const xbridgeId = await this.xbridgeBSC.getXbridgeId(nativeInfo.nativeChainId, nativeInfo.nativeAddress);
+          // console.log(xbridgeId);
+          // console.log(`xbridgeWethId ${this.xbridgeWethId}`);
+          const xbridgeInfo = await this.xbridgeBSC.getXbridge(xbridgeId);
+          const xbridgeFeeInfo = await this.xbridgeBSC.getXbridgeFeeInfo(xbridgeId);
+          const deBridgeToken = await XDCBridgeToken.at(xbridgeInfo.tokenAddress);
           const balance = toBN(await deBridgeToken.balanceOf(bob));
-          const supportedChainInfo = await this.debridgeBSC.getChainToConfig(chainIdTo);
+          const supportedChainInfo = await this.xbridgeBSC.getChainToConfig(chainIdTo);
           const permitParameter = await permitWithDeadline(
             deBridgeToken,
             bob,
-            this.debridgeBSC.address,
+            this.xbridgeBSC.address,
             amount,
             toBN(MAX_UINT256),
             bobPrivKey
           );
-          const nativeDebridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(
-            nativeBSCDebridgeId
+          const nativeXbridgeFeeInfo = await this.xbridgeBSC.getXbridgeFeeInfo(
+            nativeBSCXbridgeId
           );
           let fixedNativeFeeWithDiscount = supportedChainInfo.fixedNativeFee;
           fixedNativeFeeWithDiscount = toBN(fixedNativeFeeWithDiscount).sub(
             toBN(fixedNativeFeeWithDiscount).mul(discount).div(BPS)
           );
-          let burnTx = await this.debridgeBSC.connect(bobAccount).send(
+          let burnTx = await this.xbridgeBSC.connect(bobAccount).send(
             currentToken,
             amount,
             chainIdTo,
@@ -1808,24 +1808,24 @@ contract("DeBridgeGate real pipeline mode", function () {
             0,
           )
 
-          const newNativeDebridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(
-            nativeBSCDebridgeId
+          const newNativeXbridgeFeeInfo = await this.xbridgeBSC.getXbridgeFeeInfo(
+            nativeBSCXbridgeId
           );
           const newBalance = toBN(await deBridgeToken.balanceOf(bob));
           assert.equal(balance.sub(amount).toString(), newBalance.toString());
-          const newDebridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(debridgeId);
+          const newXbridgeFeeInfo = await this.xbridgeBSC.getXbridgeFeeInfo(xbridgeId);
           let fees = toBN(supportedChainInfo.transferFeeBps).mul(amount).div(BPS);
           fees = toBN(fees).sub(toBN(fees).mul(discount).div(BPS));
-          // console.log( debridgeFeeInfo);
-          // console.log( 'newDebridgeFeeInfo');
-          // console.log(newDebridgeFeeInfo);
+          // console.log( xbridgeFeeInfo);
+          // console.log( 'newXbridgeFeeInfo');
+          // console.log(newXbridgeFeeInfo);
           assert.equal(
-            debridgeFeeInfo.collectedFees.add(fees).toString(),
-            newDebridgeFeeInfo.collectedFees.toString()
+            xbridgeFeeInfo.collectedFees.add(fees).toString(),
+            newXbridgeFeeInfo.collectedFees.toString()
           );
           assert.equal(
-            nativeDebridgeFeeInfo.collectedFees.add(fixedNativeFeeWithDiscount).toString(),
-            newNativeDebridgeFeeInfo.collectedFees.toString()
+            nativeXbridgeFeeInfo.collectedFees.add(fixedNativeFeeWithDiscount).toString(),
+            newNativeXbridgeFeeInfo.collectedFees.toString()
           );
         }
       });
@@ -1835,8 +1835,8 @@ contract("DeBridgeGate real pipeline mode", function () {
       //   const receiver = bob;
       //   const amount = toBN(toWei("1"));
       //   await expectRevert(
-      //     this.debridgeETH.burn(
-      //       this.debridgeWethId,
+      //     this.xbridgeETH.burn(
+      //       this.xbridgeWethId,
       //       receiver,
       //       amount,
       //       ethChainId,
@@ -1855,23 +1855,23 @@ contract("DeBridgeGate real pipeline mode", function () {
       it("should support non EVM receiver parameter", async function () {
         const amount = toBN(toWei("0.1"));
         const currentToken = deETHAddressInBSC;
-        const nativeInfo = await this.debridgeBSC.getNativeInfo(currentToken);
+        const nativeInfo = await this.xbridgeBSC.getNativeInfo(currentToken);
         // console.log("nativeInfo");
         // console.log(nativeInfo);
-        const debridgeId = await this.debridgeBSC.getDebridgeId(nativeInfo.nativeChainId, nativeInfo.nativeAddress);
-        // console.log("debridgeId");
-        // console.log(debridgeId);
+        const xbridgeId = await this.xbridgeBSC.getXbridgeId(nativeInfo.nativeChainId, nativeInfo.nativeAddress);
+        // console.log("xbridgeId");
+        // console.log(xbridgeId);
 
-        const debridgeInfo = await this.debridgeBSC.getDebridge(debridgeId);
-        // console.log("debridgeInfo");
-        // console.log(debridgeInfo);
+        const xbridgeInfo = await this.xbridgeBSC.getXbridge(xbridgeId);
+        // console.log("xbridgeInfo");
+        // console.log(xbridgeInfo);
 
-        const deBridgeToken = await DeBridgeToken.at(debridgeInfo.tokenAddress);
+        const deBridgeToken = await XDCBridgeToken.at(xbridgeInfo.tokenAddress);
         // console.log(`deBridgeToken: ${deBridgeToken.address}`);
         // console.log(`currentToken: ${currentToken}`);
         assert.equal(currentToken, deBridgeToken.address);
 
-        const supportedChainInfo = await this.debridgeBSC.getChainToConfig(ethChainId);
+        const supportedChainInfo = await this.xbridgeBSC.getChainToConfig(ethChainId);
         let fixedNativeFeeWithDiscount = supportedChainInfo.fixedNativeFee;
         fixedNativeFeeWithDiscount = toBN(fixedNativeFeeWithDiscount).sub(
           toBN(fixedNativeFeeWithDiscount).mul(discount).div(BPS)
@@ -1880,12 +1880,12 @@ contract("DeBridgeGate real pipeline mode", function () {
           const permitParameter = await permitWithDeadline(
             deBridgeToken,
             bob,
-            this.debridgeBSC.address,
+            this.xbridgeBSC.address,
             amount,
             toBN(MAX_UINT256),
             bobPrivKey
           );
-          const tx = await this.debridgeBSC.connect(bobAccount).send(
+          const tx = await this.xbridgeBSC.connect(bobAccount).send(
             currentToken,
             amount,
             ethChainId,
@@ -1921,12 +1921,12 @@ contract("DeBridgeGate real pipeline mode", function () {
   context("Test claim method (ETH network)", () => {
     before(async function () {
       this.nativeSubmission = burnEvents.find((x) => {
-        return x.args.debridgeId == this.debridgeWethId;
+        return x.args.xbridgeId == this.xbridgeWethId;
       });
       this.nativeSubmissionId = this.nativeSubmission.args.submissionId;
 
       this.linkSubmission = burnEvents.find((x) => {
-        return x.args.debridgeId == this.linkDebridgeId;
+        return x.args.xbridgeId == this.linkXbridgeId;
       });
       this.linkSubmissionId = this.linkSubmission.args.submissionId;
 
@@ -1957,15 +1957,15 @@ contract("DeBridgeGate real pipeline mode", function () {
     });
 
     it("should reject when the submission is blocked", async function () {
-      await this.debridgeETH.blockSubmission([this.nativeSubmissionId], true, {
+      await this.xbridgeETH.blockSubmission([this.nativeSubmissionId], true, {
         from: alice,
       });
 
-      assert.equal(await this.debridgeETH.isBlockedSubmission(this.nativeSubmissionId), true);
+      assert.equal(await this.xbridgeETH.isBlockedSubmission(this.nativeSubmissionId), true);
 
       await expectRevert(
-        this.debridgeETH.claim(
-          this.debridgeWethId,
+        this.xbridgeETH.claim(
+          this.xbridgeWethId,
           this.nativeSubmission.args.amount,
           bscChainId,
           this.nativeSubmission.args.receiver,
@@ -1981,14 +1981,14 @@ contract("DeBridgeGate real pipeline mode", function () {
     });
 
     it("should unblock the submission by admin", async function () {
-      await this.debridgeETH.blockSubmission([this.nativeSubmissionId], false, {
+      await this.xbridgeETH.blockSubmission([this.nativeSubmissionId], false, {
         from: alice,
       });
-      assert.equal(await this.debridgeETH.isBlockedSubmission(this.nativeSubmissionId), false);
+      assert.equal(await this.xbridgeETH.isBlockedSubmission(this.nativeSubmissionId), false);
     });
 
     it("should reject when exist dublicate signatures", async function () {
-      const debridgeId = this.debridgeWethId;
+      const xbridgeId = this.xbridgeWethId;
       const receiver = this.nativeSubmission.args.receiver;
       const amount = this.nativeSubmission.args.amount;
       const nonce = this.nativeSubmission.args.nonce;
@@ -2001,8 +2001,8 @@ contract("DeBridgeGate real pipeline mode", function () {
       //console.log("signatures count: " + signaturesWithDublicate.length);
 
       await expectRevert(
-        this.debridgeETH.claim(
-          debridgeId,
+        this.xbridgeETH.claim(
+          xbridgeId,
           amount,
           bscChainId,
           receiver,
@@ -2018,15 +2018,15 @@ contract("DeBridgeGate real pipeline mode", function () {
     });
 
     it("should claim native token when the submission is approved", async function () {
-      const debridgeId = this.debridgeWethId;
-      const debridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(debridgeId);
+      const xbridgeId = this.xbridgeWethId;
+      const xbridgeFeeInfo = await this.xbridgeETH.getXbridgeFeeInfo(xbridgeId);
       const receiver = this.nativeSubmission.args.receiver;
       const balance = await toBN(await this.wethETH.balanceOf(receiver));
       const amount = this.nativeSubmission.args.amount;
       const nonce = this.nativeSubmission.args.nonce;
       //console.log("signatures count: " + this.nativeSignatures.length);
-      await this.debridgeETH.claim(
-        debridgeId,
+      await this.xbridgeETH.claim(
+        xbridgeId,
         amount,
         bscChainId,
         receiver,
@@ -2038,28 +2038,28 @@ contract("DeBridgeGate real pipeline mode", function () {
         }
       );
       const newBalance = await toBN(await this.wethETH.balanceOf(receiver));
-      const isSubmissionUsed = await this.debridgeETH.isSubmissionUsed(this.nativeSubmissionId);
-      const newDebridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(debridgeId);
+      const isSubmissionUsed = await this.xbridgeETH.isSubmissionUsed(this.nativeSubmissionId);
+      const newXbridgeFeeInfo = await this.xbridgeETH.getXbridgeFeeInfo(xbridgeId);
       assert.equal(balance.add(amount).toString(), newBalance.toString());
       assert.equal(
-        debridgeFeeInfo.collectedFees.toString(),
-        newDebridgeFeeInfo.collectedFees.toString()
+        xbridgeFeeInfo.collectedFees.toString(),
+        newXbridgeFeeInfo.collectedFees.toString()
       );
       assert.ok(isSubmissionUsed);
 
-      const externalIsSubmissionUsed = await this.mockExternalContract.readIsSubmissionUsed(this.debridgeETH.address, this.nativeSubmissionId);
+      const externalIsSubmissionUsed = await this.mockExternalContract.readIsSubmissionUsed(this.xbridgeETH.address, this.nativeSubmissionId);
       assert.ok(externalIsSubmissionUsed);
     });
 
     it("should claim ERC20 when the submission is approved", async function () {
-      const debridgeId = this.linkDebridgeId;
-      const debridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(debridgeId);
+      const xbridgeId = this.linkXbridgeId;
+      const xbridgeFeeInfo = await this.xbridgeETH.getXbridgeFeeInfo(xbridgeId);
       const receiver = this.linkSubmission.args.receiver;
       const balance = toBN(await this.linkToken.balanceOf(receiver));
       const amount = this.linkSubmission.args.amount;
       const nonce = this.linkSubmission.args.nonce;
-      await this.debridgeETH.claim(
-        debridgeId,
+      await this.xbridgeETH.claim(
+        xbridgeId,
         amount,
         bscChainId,
         receiver,
@@ -2071,27 +2071,27 @@ contract("DeBridgeGate real pipeline mode", function () {
         }
       );
       const newBalance = toBN(await this.linkToken.balanceOf(receiver));
-      const isSubmissionUsed = await this.debridgeETH.isSubmissionUsed(this.linkSubmissionId);
-      const newDebridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(debridgeId);
+      const isSubmissionUsed = await this.xbridgeETH.isSubmissionUsed(this.linkSubmissionId);
+      const newXbridgeFeeInfo = await this.xbridgeETH.getXbridgeFeeInfo(xbridgeId);
       assert.equal(balance.add(amount).toString(), newBalance.toString());
       assert.equal(
-        debridgeFeeInfo.collectedFees.toString(),
-        newDebridgeFeeInfo.collectedFees.toString()
+        xbridgeFeeInfo.collectedFees.toString(),
+        newXbridgeFeeInfo.collectedFees.toString()
       );
       assert.ok(isSubmissionUsed);
 
-      const externalIsSubmissionUsed = await this.mockExternalContract.readIsSubmissionUsed(this.debridgeETH.address, this.linkSubmissionId);
+      const externalIsSubmissionUsed = await this.mockExternalContract.readIsSubmissionUsed(this.xbridgeETH.address, this.linkSubmissionId);
       assert.ok(externalIsSubmissionUsed);
     });
 
     it("should reject claiming with unconfirmed submission", async function () {
-      const debridgeId = this.linkDebridgeId;
+      const xbridgeId = this.linkXbridgeId;
       const receiver = this.linkSubmission.args.receiver;
       const amount = this.linkSubmission.args.amount;
       const wrongNonce = 999;
       await expectRevert(
-        this.debridgeETH.claim(
-          debridgeId,
+        this.xbridgeETH.claim(
+          xbridgeId,
           amount,
           bscChainId,
           receiver,
@@ -2105,14 +2105,14 @@ contract("DeBridgeGate real pipeline mode", function () {
     });
 
     it("should reject claiming twice", async function () {
-      const debridgeId = this.linkDebridgeId;
+      const xbridgeId = this.linkXbridgeId;
       const receiver = this.linkSubmission.args.receiver;
       const amount = this.linkSubmission.args.amount;
       const nonce = this.linkSubmission.args.nonce;
 
       await expectRevert(
-        this.debridgeETH.claim(
-          debridgeId,
+        this.xbridgeETH.claim(
+          xbridgeId,
           amount,
           bscChainId,
           receiver,
@@ -2132,27 +2132,27 @@ contract("DeBridgeGate real pipeline mode", function () {
     });
     it("should send native tokens (from BSC to HECO)", async function () {
       const tokenAddress = ZERO_ADDRESS;
-      const chainId = await this.debridgeBSC.chainId();
+      const chainId = await this.xbridgeBSC.chainId();
       const receiver = bob;
       const amount = toBN(toWei("10"));
       const chainIdTo = hecoChainId;
-      // const debridgeId = await this.debridgeBSC.getDebridgeId(
+      // const xbridgeId = await this.xbridgeBSC.getXbridgeId(
       //   chainId,
       //   tokenAddress
       // );
       const discount = 0;
-      const balance = toBN(await this.wethBSC.balanceOf(this.debridgeBSC.address));
-      // const debridge = await this.debridgeBSC.getDebridge(debridgeId);
+      const balance = toBN(await this.wethBSC.balanceOf(this.xbridgeBSC.address));
+      // const xbridge = await this.xbridgeBSC.getXbridge(xbridgeId);
       //collect fee in weth bsc
-      const debridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(this.debridgeWethBSCId);
-      const supportedChainInfo = await this.debridgeBSC.getChainToConfig(chainIdTo);
+      const xbridgeFeeInfo = await this.xbridgeBSC.getXbridgeFeeInfo(this.xbridgeWethBSCId);
+      const supportedChainInfo = await this.xbridgeBSC.getChainToConfig(chainIdTo);
       const fixedNativeFeeAfterDiscount = toBN(supportedChainInfo.fixedNativeFee).mul(BPS-discount).div(BPS);
       let feesWithFix = toBN(supportedChainInfo.transferFeeBps)
         .mul(toBN(amount).sub(fixedNativeFeeAfterDiscount))
         .div(BPS)
         .add(fixedNativeFeeAfterDiscount);
 
-      let sendTx = await this.debridgeBSC.send(
+      let sendTx = await this.xbridgeBSC.send(
         tokenAddress,
         amount,
         chainIdTo,
@@ -2185,40 +2185,40 @@ contract("DeBridgeGate real pipeline mode", function () {
         0,
       )
 
-      const newBalance = toBN(await this.wethBSC.balanceOf(this.debridgeBSC.address));
-      // const newDebridgeInfo = await this.debridgeBSC.getDebridge(debridgeId);
-      const newDebridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(this.debridgeWethBSCId);
+      const newBalance = toBN(await this.wethBSC.balanceOf(this.xbridgeBSC.address));
+      // const newXbridgeInfo = await this.xbridgeBSC.getXbridge(xbridgeId);
+      const newXbridgeFeeInfo = await this.xbridgeBSC.getXbridgeFeeInfo(this.xbridgeWethBSCId);
       assert.equal(balance.add(amount).toString(), newBalance.toString());
       assert.equal(
-        debridgeFeeInfo.collectedFees.add(feesWithFix).toString(),
-        newDebridgeFeeInfo.collectedFees.toString()
+        xbridgeFeeInfo.collectedFees.add(feesWithFix).toString(),
+        newXbridgeFeeInfo.collectedFees.toString()
       );
     });
 
     it("should send ERC20 (Cake) tokens (from BSC to HECO)", async function () {
       const tokenAddress = this.cakeToken.address;
-      const chainId = await this.debridgeBSC.chainId();
+      const chainId = await this.xbridgeBSC.chainId();
       const receiver = bob;
       const amount = toBN(toWei("100"));
       const chainIdTo = hecoChainId;
       await this.cakeToken.mint(alice, amount, {
         from: alice,
       });
-      await this.cakeToken.approve(this.debridgeBSC.address, amount, {
+      await this.cakeToken.approve(this.xbridgeBSC.address, amount, {
         from: alice,
       });
-      const debridgeId = await this.debridgeBSC.getDebridgeId(chainId, tokenAddress);
+      const xbridgeId = await this.xbridgeBSC.getXbridgeId(chainId, tokenAddress);
 
-      this.cakeDebridgeId = debridgeId;
-      const balance = toBN(await this.cakeToken.balanceOf(this.debridgeBSC.address));
-      const debridgeInfo = await this.debridgeBSC.getDebridge(debridgeId);
-      const debridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(debridgeId);
-      const supportedChainInfo = await this.debridgeBSC.getChainToConfig(chainIdTo);
-      const nativeDebridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(
-        this.nativeDebridgeIdBSC
+      this.cakeXbridgeId = xbridgeId;
+      const balance = toBN(await this.cakeToken.balanceOf(this.xbridgeBSC.address));
+      const xbridgeInfo = await this.xbridgeBSC.getXbridge(xbridgeId);
+      const xbridgeFeeInfo = await this.xbridgeBSC.getXbridgeFeeInfo(xbridgeId);
+      const supportedChainInfo = await this.xbridgeBSC.getChainToConfig(chainIdTo);
+      const nativeXbridgeFeeInfo = await this.xbridgeBSC.getXbridgeFeeInfo(
+        this.nativeXbridgeIdBSC
       );
       let fees = toBN(supportedChainInfo.transferFeeBps).mul(amount).div(BPS);
-      let sendTx = await this.debridgeBSC.send(
+      let sendTx = await this.xbridgeBSC.send(
         tokenAddress,
         amount,
         chainIdTo,
@@ -2251,28 +2251,28 @@ contract("DeBridgeGate real pipeline mode", function () {
         0,
       )
 
-      const newNativeDebridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(
-        this.nativeDebridgeIdBSC
+      const newNativeXbridgeFeeInfo = await this.xbridgeBSC.getXbridgeFeeInfo(
+        this.nativeXbridgeIdBSC
       );
-      const newBalance = toBN(await this.cakeToken.balanceOf(this.debridgeBSC.address));
-      const newDebridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(debridgeId);
+      const newBalance = toBN(await this.cakeToken.balanceOf(this.xbridgeBSC.address));
+      const newXbridgeFeeInfo = await this.xbridgeBSC.getXbridgeFeeInfo(xbridgeId);
       assert.equal(balance.add(amount).toString(), newBalance.toString());
       assert.equal(
-        debridgeFeeInfo.collectedFees.add(fees).toString(),
-        newDebridgeFeeInfo.collectedFees.toString()
+        xbridgeFeeInfo.collectedFees.add(fees).toString(),
+        newXbridgeFeeInfo.collectedFees.toString()
       );
 
       assert.equal(
-        nativeDebridgeFeeInfo.collectedFees.add(toBN(supportedChainInfo.fixedNativeFee)).toString(),
-        newNativeDebridgeFeeInfo.collectedFees.toString()
+        nativeXbridgeFeeInfo.collectedFees.add(toBN(supportedChainInfo.fixedNativeFee)).toString(),
+        newNativeXbridgeFeeInfo.collectedFees.toString()
       );
     });
 
     it("should mint (deBSC) when the submission is approved", async function () {
       const balance = toBN("0");
       const signatures = await submissionSignatures(bscWeb3, oracleKeys, this.nativeSubmission.args.submissionId);
-      await this.debridgeHECO.claim(
-        this.debridgeWethBSCId,
+      await this.xbridgeHECO.claim(
+        this.xbridgeWethBSCId,
         this.nativeSubmission.args.amount,
         bscChainId,
         this.nativeSubmission.args.receiver,
@@ -2284,26 +2284,26 @@ contract("DeBridgeGate real pipeline mode", function () {
         }
       );
 
-      const debridgeInfo = await this.debridgeHECO.getDebridge(this.debridgeWethBSCId);
-      const deBridgeToken = await DeBridgeToken.at(debridgeInfo.tokenAddress);
+      const xbridgeInfo = await this.xbridgeHECO.getXbridge(this.xbridgeWethBSCId);
+      const deBridgeToken = await XDCBridgeToken.at(xbridgeInfo.tokenAddress);
       const newBalance = toBN(await deBridgeToken.balanceOf(this.nativeSubmission.args.receiver));
 
-      const submissionId = await this.debridgeHECO.getSubmissionId(
-        this.debridgeWethBSCId,
+      const submissionId = await this.xbridgeHECO.getSubmissionId(
+        this.xbridgeWethBSCId,
         bscChainId,
         hecoChainId,
         this.nativeSubmission.args.amount,
         this.nativeSubmission.args.receiver,
         this.nativeSubmission.args.nonce
       );
-      const isSubmissionUsed = await this.debridgeHECO.isSubmissionUsed(submissionId);
+      const isSubmissionUsed = await this.xbridgeHECO.isSubmissionUsed(submissionId);
       assert.equal(
         balance.add(this.nativeSubmission.args.amount).toString(),
         newBalance.toString()
       );
       assert.ok(isSubmissionUsed);
 
-      const externalIsSubmissionUsed = await this.mockExternalContract.readIsSubmissionUsed(this.debridgeHECO.address, submissionId);
+      const externalIsSubmissionUsed = await this.mockExternalContract.readIsSubmissionUsed(this.xbridgeHECO.address, submissionId);
       assert.ok(externalIsSubmissionUsed);
     });
 
@@ -2311,8 +2311,8 @@ contract("DeBridgeGate real pipeline mode", function () {
       const balance = toBN("0");
       const signatures = await submissionSignatures(bscWeb3, oracleKeys, this.cakeSubmission.args.submissionId);
 
-      let mintTx = await this.debridgeHECO.claim(
-        this.cakeDebridgeId,
+      let mintTx = await this.xbridgeHECO.claim(
+        this.cakeXbridgeId,
         this.cakeSubmission.args.amount,
         bscChainId,
         this.cakeSubmission.args.receiver,
@@ -2325,49 +2325,49 @@ contract("DeBridgeGate real pipeline mode", function () {
       );
       let receipt = await mintTx.wait();
 
-      const debridgeInfo = await this.debridgeHECO.getDebridge(this.cakeDebridgeId);
-      const deBridgeToken = await DeBridgeToken.at(debridgeInfo.tokenAddress);
+      const xbridgeInfo = await this.xbridgeHECO.getXbridge(this.cakeXbridgeId);
+      const deBridgeToken = await XDCBridgeToken.at(xbridgeInfo.tokenAddress);
       const newBalance = toBN(await deBridgeToken.balanceOf(this.cakeSubmission.args.receiver));
-      const submissionId = await this.debridgeHECO.getSubmissionId(
-        this.cakeDebridgeId,
+      const submissionId = await this.xbridgeHECO.getSubmissionId(
+        this.cakeXbridgeId,
         bscChainId,
         hecoChainId,
         this.cakeSubmission.args.amount,
         this.cakeSubmission.args.receiver,
         this.cakeSubmission.args.nonce
       );
-      const isSubmissionUsed = await this.debridgeHECO.isSubmissionUsed(submissionId);
+      const isSubmissionUsed = await this.xbridgeHECO.isSubmissionUsed(submissionId);
       assert.equal(balance.add(this.cakeSubmission.args.amount).toString(), newBalance.toString());
       assert.ok(isSubmissionUsed);
 
-      const externalIsSubmissionUsed = await this.mockExternalContract.readIsSubmissionUsed(this.debridgeHECO.address, submissionId);
+      const externalIsSubmissionUsed = await this.mockExternalContract.readIsSubmissionUsed(this.xbridgeHECO.address, submissionId);
       assert.ok(externalIsSubmissionUsed);
     });
 
     it("should burn (deCake in HECO network)", async function () {
       const currentToken = deCakeAddressInHECO;
-      const nativeInfo = await this.debridgeHECO.getNativeInfo(currentToken);
-      const debridgeId = await this.debridgeHECO.getDebridgeId(nativeInfo.nativeChainId, nativeInfo.nativeAddress);
+      const nativeInfo = await this.xbridgeHECO.getNativeInfo(currentToken);
+      const xbridgeId = await this.xbridgeHECO.getXbridgeId(nativeInfo.nativeChainId, nativeInfo.nativeAddress);
       const chainIdTo = ethChainId;
       const receiver = bob;
       const amount = toBN(toWei("1"));
-      const debridgeInfo = await this.debridgeHECO.getDebridge(debridgeId);
-      const deBridgeToken = await DeBridgeToken.at(debridgeInfo.tokenAddress);
+      const xbridgeInfo = await this.xbridgeHECO.getXbridge(xbridgeId);
+      const deBridgeToken = await XDCBridgeToken.at(xbridgeInfo.tokenAddress);
       assert.equal(currentToken, deBridgeToken.address);
       const balance = toBN(await deBridgeToken.balanceOf(bob));
       // const deadline = toBN(Math.floor(Date.now() / 1000)+1000);
-      const supportedChainInfo = await this.debridgeHECO.getChainToConfig(chainIdTo);
+      const supportedChainInfo = await this.xbridgeHECO.getChainToConfig(chainIdTo);
       const permitParameter = await permitWithDeadline(
         deBridgeToken,
         bob,
-        this.debridgeHECO.address,
+        this.xbridgeHECO.address,
         amount,
         toBN(MAX_UINT256),
         bobPrivKey
       );
       let fixedNativeFeeWithDiscount = supportedChainInfo.fixedNativeFee;
       // fixedNativeFeeWithDiscount = toBN(fixedNativeFeeWithDiscount).sub(toBN(fixedNativeFeeWithDiscount).mul(discount).div(BPS));
-      let burnTx = await this.debridgeHECO.connect(bobAccount).send(
+      let burnTx = await this.xbridgeHECO.connect(bobAccount).send(
         currentToken,
         amount,
         chainIdTo,
@@ -2411,7 +2411,7 @@ contract("DeBridgeGate real pipeline mode", function () {
 
       // console.log(mypack);
       // console.log(ethersPack);
-      const sentTx = await this.debridgeETH
+      const sentTx = await this.xbridgeETH
         .connect(sender)
         .send(
           ZERO_ADDRESS,
@@ -2447,8 +2447,8 @@ contract("DeBridgeGate real pipeline mode", function () {
         executionFee,
       )
 
-      const submissionIdFrom = await this.debridgeBSC.getSubmissionIdFrom(
-        this.debridgeWethId,
+      const submissionIdFrom = await this.xbridgeBSC.getSubmissionIdFrom(
+        this.xbridgeWethId,
         ethChainId,
         amount.sub(executionFee),
         receiver.address,
@@ -2478,7 +2478,7 @@ contract("DeBridgeGate real pipeline mode", function () {
     const REVERT_IF_EXTERNAL_FAIL = 1;
     // Flag to call proxy with a sender contract
     const PROXY_WITH_SENDER = 2;
-    // Data is hash in DeBridgeGate send method
+    // Data is hash in XDCBridgeGate send method
     const SEND_HASHED_DATA = 3;
 
     let ethAccount, bscAccount;
@@ -2497,8 +2497,8 @@ contract("DeBridgeGate real pipeline mode", function () {
       executionFee = toBN(toWei("5"));
       fallbackAddress = fei;
 
-      const debridgeInfo = await this.debridgeBSC.getDebridge(this.debridgeWethId);
-      deETHToken = await DeBridgeToken.at(debridgeInfo.tokenAddress);
+      const xbridgeInfo = await this.xbridgeBSC.getXbridge(this.xbridgeWethId);
+      deETHToken = await XDCBridgeToken.at(xbridgeInfo.tokenAddress);
     })
 
     beforeEach(async function() {
@@ -2511,7 +2511,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       balanceInitialWETH = toBN(await this.wethETH.balanceOf(ethAccount.address));
 
       // send native token from ETH to BSC
-      sentTx = await this.debridgeETH
+      sentTx = await this.xbridgeETH
         .connect(ethAccount)
         .send(
           ZERO_ADDRESS,
@@ -2552,10 +2552,10 @@ contract("DeBridgeGate real pipeline mode", function () {
 
       balanceDeETHBeforeMint = toBN(await deETHToken.balanceOf(bscAccount.address));
       // call mint on BSC to get deETH
-      await this.debridgeBSC
+      await this.xbridgeBSC
         .connect(bscAccount)
         .claim(
-          this.debridgeWethId,
+          this.xbridgeWethId,
           sentEvent.args.amount,
           ethChainId,
           bscAccount.address,
@@ -2568,7 +2568,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       assert.equal(balanceDeETHAfterMint.toString(), balanceDeETHBeforeMint.add(sentEvent.args.amount).toString());
 
       // approve before burn
-      await deETHToken.approve(this.debridgeBSC.address, amount,
+      await deETHToken.approve(this.xbridgeBSC.address, amount,
         {from: bscAccount.address});
     })
 
@@ -2578,7 +2578,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         const flags = 2 ** UNWRAP_ETH;
 
         // call autoburn on BSC
-        const burnTx = await this.debridgeBSC
+        const burnTx = await this.xbridgeBSC
           .connect(bscAccount)
           .send(
             deETHToken.address,
@@ -2621,10 +2621,10 @@ contract("DeBridgeGate real pipeline mode", function () {
         )
 
         // worker call claim on ETH to get native tokens back
-        const claimTx = await this.debridgeETH
+        const claimTx = await this.xbridgeETH
           .connect(workerAccount)
           .claim(
-            burnEvent.args.debridgeId,
+            burnEvent.args.xbridgeId,
             burnEvent.args.amount,
             bscChainId,
             ethAccount.address,
@@ -2660,7 +2660,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         const flags = 2 ** UNWRAP_ETH;
 
         // call autoburn on BSC
-        const burnTx = await this.debridgeBSC
+        const burnTx = await this.xbridgeBSC
           .connect(bscAccount)
           .send(
             deETHToken.address,
@@ -2695,7 +2695,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         const burnReceipt = await burnTx.wait();
         const burnEvent = burnReceipt.events.find(i => i.event == "Sent");
         // console.log(burnEvent)
-        const callProxyAddress = await this.debridgeETH.callProxy();
+        const callProxyAddress = await this.xbridgeETH.callProxy();
 
         await testSubmissionFees(
           feesCalculatorBSC,
@@ -2710,10 +2710,10 @@ contract("DeBridgeGate real pipeline mode", function () {
 
         // worker call claim on ETH to get native tokens back
         await expect(
-          this.debridgeETH
+          this.xbridgeETH
             .connect(workerAccount)
             .claim(
-              burnEvent.args.debridgeId,
+              burnEvent.args.xbridgeId,
               burnEvent.args.amount,
               bscChainId,
               receiverContract.address,
@@ -2726,7 +2726,7 @@ contract("DeBridgeGate real pipeline mode", function () {
                 autoData,
                 bscAccount.address))
         )
-          .to.emit(this.debridgeETH, "AutoRequestExecuted")
+          .to.emit(this.xbridgeETH, "AutoRequestExecuted")
           .withArgs(burnEvent.args.submissionId, true, callProxyAddress);
 
         // weth balance of receiver shouldn't change
@@ -2756,8 +2756,8 @@ contract("DeBridgeGate real pipeline mode", function () {
 
       it("should set Weth Gate  if called by the admin", async function () {
         const gateAddress = this.wethGateETH.address;
-        await this.debridgeETH.setWethGate(gateAddress);
-        assert.equal(gateAddress, await this.debridgeETH.wethGate());
+        await this.xbridgeETH.setWethGate(gateAddress);
+        assert.equal(gateAddress, await this.xbridgeETH.wethGate());
       });
 
       it("should burn/claim with UNWRAP_ETH flag without auto call data", async function() {
@@ -2765,7 +2765,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         const flags = 2 ** UNWRAP_ETH;
 
         // call autoburn on BSC
-        const burnTx = await this.debridgeBSC
+        const burnTx = await this.xbridgeBSC
           .connect(bscAccount)
           .send(
             deETHToken.address,
@@ -2808,10 +2808,10 @@ contract("DeBridgeGate real pipeline mode", function () {
         )
 
         // worker call claim on ETH to get native tokens back
-        const claimTx = await this.debridgeETH
+        const claimTx = await this.xbridgeETH
           .connect(workerAccount)
           .claim(
-            burnEvent.args.debridgeId,
+            burnEvent.args.xbridgeId,
             burnEvent.args.amount,
             bscChainId,
             ethAccount.address,
@@ -2847,7 +2847,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         const flags = 2 ** UNWRAP_ETH;
 
         // call autoburn on BSC
-        const burnTx = await this.debridgeBSC
+        const burnTx = await this.xbridgeBSC
           .connect(bscAccount)
           .send(
             deETHToken.address,
@@ -2882,7 +2882,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         const burnReceipt = await burnTx.wait();
         const burnEvent = burnReceipt.events.find(i => i.event == "Sent");
         // console.log(burnEvent)
-        const callProxyAddress = await this.debridgeETH.callProxy();
+        const callProxyAddress = await this.xbridgeETH.callProxy();
 
         await testSubmissionFees(
           feesCalculatorBSC,
@@ -2897,10 +2897,10 @@ contract("DeBridgeGate real pipeline mode", function () {
 
         // worker call claim on ETH to get native tokens back
         await expect(
-          this.debridgeETH
+          this.xbridgeETH
             .connect(workerAccount)
             .claim(
-              burnEvent.args.debridgeId,
+              burnEvent.args.xbridgeId,
               burnEvent.args.amount,
               bscChainId,
               receiverContract.address,
@@ -2913,7 +2913,7 @@ contract("DeBridgeGate real pipeline mode", function () {
                 autoData,
                 bscAccount.address))
         )
-          .to.emit(this.debridgeETH, "AutoRequestExecuted")
+          .to.emit(this.xbridgeETH, "AutoRequestExecuted")
           .withArgs(burnEvent.args.submissionId, true, callProxyAddress);
 
         // weth balance of receiver shouldn't change
@@ -2938,8 +2938,8 @@ contract("DeBridgeGate real pipeline mode", function () {
       });
 
       it("should set zero address to Weth Gate if called by the admin", async function () {
-        await this.debridgeETH.setWethGate(ZERO_ADDRESS);
-        assert.equal(ZERO_ADDRESS, await this.debridgeETH.wethGate());
+        await this.xbridgeETH.setWethGate(ZERO_ADDRESS);
+        assert.equal(ZERO_ADDRESS, await this.xbridgeETH.wethGate());
       });
     });
 
@@ -2959,7 +2959,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         const flags = 2 ** PROXY_WITH_SENDER;
 
         // call autoburn on BSC
-        const burnTx = await this.debridgeBSC
+        const burnTx = await this.xbridgeBSC
           .connect(bscAccount)
           .send(
             deETHToken.address,
@@ -3006,10 +3006,10 @@ contract("DeBridgeGate real pipeline mode", function () {
 
         // worker call claim on ETH to get native tokens back
         await expect(
-          this.debridgeETH
+          this.xbridgeETH
             .connect(workerAccount)
             .claim(
-              burnEvent.args.debridgeId,
+              burnEvent.args.xbridgeId,
               burnEvent.args.amount,
               bscChainId,
               receiverContract.address,
@@ -3022,7 +3022,7 @@ contract("DeBridgeGate real pipeline mode", function () {
                 autoData,
                 bscAccount.address))
         )
-          .to.emit(this.debridgeETH, "AutoRequestExecuted")
+          .to.emit(this.xbridgeETH, "AutoRequestExecuted")
           .withArgs(burnEvent.args.submissionId, true, this.callProxy.address);
 
         // weth balance of receiver should change
@@ -3044,7 +3044,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         assert.equal(bscAccount.address.toString().toLowerCase(), await receiverContract.submissionNativeSender());
         assert.equal("0x", await this.callProxy.submissionNativeSender());
         // check chainIdfrom
-        assert.equal((await this.debridgeBSC.chainId()).toString(), (await receiverContract.submissionChainIdFrom()).toString());
+        assert.equal((await this.xbridgeBSC.chainId()).toString(), (await receiverContract.submissionChainIdFrom()).toString());
         assert.equal("0", (await this.callProxy.submissionChainIdFrom()).toString());
 
       });
@@ -3066,7 +3066,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         const flags = 2 ** REVERT_IF_EXTERNAL_FAIL;
 
         // call autoburn on BSC
-        const burnTx = await this.debridgeBSC
+        const burnTx = await this.xbridgeBSC
           .connect(bscAccount)
           .send(
             deETHToken.address,
@@ -3108,10 +3108,10 @@ contract("DeBridgeGate real pipeline mode", function () {
 
         // worker call claim on ETH to get native tokens back
         await expectRevert(
-          this.debridgeETH
+          this.xbridgeETH
             .connect(workerAccount)
             .claim(
-              burnEvent.args.debridgeId,
+              burnEvent.args.xbridgeId,
               burnEvent.args.amount,
               bscChainId,
               receiverContract.address,
@@ -3145,7 +3145,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         const flags = 2 ** SEND_HASHED_DATA;
 
         // call autoburn on BSC
-        await expectRevert(this.debridgeBSC
+        await expectRevert(this.xbridgeBSC
           .connect(bscAccount)
           .send(
             deETHToken.address,
@@ -3180,7 +3180,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         const flags = 2 ** PROXY_WITH_SENDER + 2 ** SEND_HASHED_DATA;
 
         // call autoburn on BSC
-        const burnTx = await this.debridgeBSC
+        const burnTx = await this.xbridgeBSC
           .connect(bscAccount)
           .send(
             deETHToken.address,
@@ -3228,10 +3228,10 @@ contract("DeBridgeGate real pipeline mode", function () {
 
         // worker call claim on ETH to get native tokens back
         await expect(
-          this.debridgeETH
+          this.xbridgeETH
             .connect(workerAccount)
             .claim(
-              burnEvent.args.debridgeId,
+              burnEvent.args.xbridgeId,
               burnEvent.args.amount,
               bscChainId,
               receiverContract.address,
@@ -3244,7 +3244,7 @@ contract("DeBridgeGate real pipeline mode", function () {
                 autoData,
                 bscAccount.address))
         )
-          .to.emit(this.debridgeETH, "AutoRequestExecuted")
+          .to.emit(this.xbridgeETH, "AutoRequestExecuted")
           .withArgs(burnEvent.args.submissionId, true, this.callProxy.address);
 
         // weth balance of receiver should change
@@ -3276,7 +3276,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         const _fallbackAddress = workerAccount.address;
 
         // call autoburn on BSC
-        const burnTx = await this.debridgeBSC
+        const burnTx = await this.xbridgeBSC
           .connect(bscAccount)
           .send(
             deETHToken.address,
@@ -3325,10 +3325,10 @@ contract("DeBridgeGate real pipeline mode", function () {
         // In this test worker is a Fallback address claim without knowledge about data, passed only the hash of data.
         // Fallback address need to receive all tokens
         await expect(
-          this.debridgeETH
+          this.xbridgeETH
             .connect(workerAccount)
             .claim(
-              burnEvent.args.debridgeId,
+              burnEvent.args.xbridgeId,
               burnEvent.args.amount,
               bscChainId,
               receiverContract.address,
@@ -3341,7 +3341,7 @@ contract("DeBridgeGate real pipeline mode", function () {
                 autoDataHash,
                 bscAccount.address))
         )
-          .to.emit(this.debridgeETH, "AutoRequestExecuted")
+          .to.emit(this.xbridgeETH, "AutoRequestExecuted")
           //External call return result = true even if there is no such method in the contract
           .withArgs(burnEvent.args.submissionId, true, this.callProxy.address);
 
@@ -3362,19 +3362,19 @@ contract("DeBridgeGate real pipeline mode", function () {
 
   context("Collect fee management", () => {
     before(async function () {
-      const debridgeInfoDeETH = await this.debridgeBSC.getDebridge(this.debridgeWethId);
-      const debridgeInfoDeLink = await this.debridgeBSC.getDebridge(this.linkDebridgeId);
+      const xbridgeInfoDeETH = await this.xbridgeBSC.getXbridge(this.xbridgeWethId);
+      const xbridgeInfoDeLink = await this.xbridgeBSC.getXbridge(this.linkXbridgeId);
       //BSC network: create pair deETH/BNB
       await this.uniswapFactoryBSC
         .connect(aliceAccount)
-        .createPair(debridgeInfoDeETH.tokenAddress, this.wethBSC.address);
+        .createPair(xbridgeInfoDeETH.tokenAddress, this.wethBSC.address);
 
       //BSC network: create pair deLINK/BNB
       await this.uniswapFactoryBSC
         .connect(aliceAccount)
-        .createPair(debridgeInfoDeLink.tokenAddress, this.wethBSC.address);
+        .createPair(xbridgeInfoDeLink.tokenAddress, this.wethBSC.address);
 
-      const debridgeInfoLink = await this.debridgeETH.getDebridge(this.linkDebridgeId);
+      const xbridgeInfoLink = await this.xbridgeETH.getXbridge(this.linkXbridgeId);
       //ETH network: create pari LINK/ETH
 
       // console.log("feeProxyETH.address " + await this.feeProxyETH.address);
@@ -3382,24 +3382,24 @@ contract("DeBridgeGate real pipeline mode", function () {
       // console.log("this.uniswapFactoryETH " + this.uniswapFactoryETH.address);
       // console.log("feeProxyETH.weth " + await this.feeProxyETH.weth());
       // console.log("this.wethETH.address " + this.wethETH.address);
-      // console.log("debridgeInfoLink.tokenAddress " + debridgeInfoLink.tokenAddress);
-      // console.log("this.linkDebridgeId " + this.linkDebridgeId);
+      // console.log("xbridgeInfoLink.tokenAddress " + xbridgeInfoLink.tokenAddress);
+      // console.log("this.linkXbridgeId " + this.linkXbridgeId);
 
       await this.uniswapFactoryETH
         .connect(aliceAccount)
-        .createPair(debridgeInfoLink.tokenAddress, this.wethETH.address);
+        .createPair(xbridgeInfoLink.tokenAddress, this.wethETH.address);
 
       const BSCPoolAddres_DeETH_BNB = await this.uniswapFactoryBSC.getPair(
-        debridgeInfoDeETH.tokenAddress,
+        xbridgeInfoDeETH.tokenAddress,
         this.wethBSC.address
       );
       const BSCPoolAddres_DeLINK_BNB = await this.uniswapFactoryBSC.getPair(
-        debridgeInfoDeLink.tokenAddress,
+        xbridgeInfoDeLink.tokenAddress,
         this.wethBSC.address
       );
 
       const ETHPoolAddres_LINK_ETH = await this.uniswapFactoryETH.getPair(
-        debridgeInfoLink.tokenAddress,
+        xbridgeInfoLink.tokenAddress,
         this.wethETH.address
       );
 
@@ -3409,8 +3409,8 @@ contract("DeBridgeGate real pipeline mode", function () {
       const BSCPool_DeLINK_BNB = await IUniswapV2Pair.at(BSCPoolAddres_DeLINK_BNB);
       const ETHPool_LINK_ETH = await IUniswapV2Pair.at(ETHPoolAddres_LINK_ETH);
 
-      this.deLinkToken = await DeBridgeToken.at(debridgeInfoDeLink.tokenAddress);
-      this.deETHToken = await DeBridgeToken.at(debridgeInfoDeETH.tokenAddress);
+      this.deLinkToken = await XDCBridgeToken.at(xbridgeInfoDeLink.tokenAddress);
+      this.deETHToken = await XDCBridgeToken.at(xbridgeInfoDeETH.tokenAddress);
 
       //Ethereum network
       await this.deETHToken.grantRole(await this.deETHToken.MINTER_ROLE(), alice, {
@@ -3509,32 +3509,32 @@ contract("DeBridgeGate real pipeline mode", function () {
     });
 
     // it("should withdraw fee of native token if it is called by the worker", async function() {
-    //   const debridgeInfo = await this.debridgeETH.getDebridge(this.nativeDebridgeId);
-    //   const balance = toBN(await web3.eth.getBalance(this.debridgeETH.address));
+    //   const xbridgeInfo = await this.xbridgeETH.getXbridge(this.nativeXbridgeId);
+    //   const balance = toBN(await web3.eth.getBalance(this.xbridgeETH.address));
     //   const balanceTreasury = toBN(await web3.eth.getBalance(treasury));
     //   //TODO: set chainIdTo;
     //   let chainIdTo = chainId;
-    //   const supportedChainInfo = await this.debridgeETH.getChainToConfig(chainIdTo);
+    //   const supportedChainInfo = await this.xbridgeETH.getChainToConfig(chainIdTo);
     //   const fixedFee = supportedChainInfo.fixedNativeFee;
     //   console.log(`chainIdTo: ${chainIdTo}`);
 
-    //   console.log(`feeProxy: ${await this.debridgeETH.feeProxy()}`);
+    //   console.log(`feeProxy: ${await this.xbridgeETH.feeProxy()}`);
     //   console.log(`fixedFee: ${fixedFee.toString()}`);
-    //   console.log(`debridgeInfo.collectedFees: ${debridgeInfo.collectedFees.toString()}`);
+    //   console.log(`xbridgeInfo.collectedFees: ${xbridgeInfo.collectedFees.toString()}`);
 
-    //   await this.debridgeETH.connect(workerAccount).withdrawFee(this.nativeDebridgeId,
+    //   await this.xbridgeETH.connect(workerAccount).withdrawFee(this.nativeXbridgeId,
     //     {
     //       value: fixedFee
     //     });
-    //   const newBalance = toBN(await web3.eth.getBalance(this.debridgeETH.address));
+    //   const newBalance = toBN(await web3.eth.getBalance(this.xbridgeETH.address));
     //   const diffBalance = balance.sub(newBalance);
-    //   const newDebridgeInfo = await this.debridgeETH.getDebridge(this.nativeDebridgeId);
+    //   const newXbridgeInfo = await this.xbridgeETH.getXbridge(this.nativeXbridgeId);
     //   const balanceTreasuryAfter = toBN(await web3.eth.getBalance(treasury));
     //   const diffBalanceTreasury = balanceTreasuryAfter.sub(balanceTreasury);
 
-    //   assert.equal(diffBalance, debridgeInfo.collectedFees.sub(debridgeInfo.withdrawnFees).toString());
-    //   assert.equal(0, newDebridgeInfo.collectedFees.sub(newDebridgeInfo.withdrawnFees).toString());
-    //   assert.equal(debridgeInfo.collectedFees.toString(), newDebridgeInfo.withdrawnFees.toString());
+    //   assert.equal(diffBalance, xbridgeInfo.collectedFees.sub(xbridgeInfo.withdrawnFees).toString());
+    //   assert.equal(0, newXbridgeInfo.collectedFees.sub(newXbridgeInfo.withdrawnFees).toString());
+    //   assert.equal(xbridgeInfo.collectedFees.toString(), newXbridgeInfo.withdrawnFees.toString());
 
     //   console.log(`diffBalance: ${diffBalance.toString()}`);
     //   console.log(`diffBalanceTreasury: ${diffBalanceTreasury.toString()}`);
@@ -3542,17 +3542,17 @@ contract("DeBridgeGate real pipeline mode", function () {
     // });
 
     it("should withdraw fee of ERC20 token (BSC network, deLink) if it is called by the worker", async function () {
-      await this.debridgeBSC.updateFeeDiscount(this.feeProxyBSC.address, 10000, 10000);
-      const debridgeInfo = await this.debridgeBSC.getDebridge(this.linkDebridgeId);
-      const debridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(this.linkDebridgeId);
-      const balance = toBN(await this.deLinkToken.balanceOf(this.debridgeBSC.address));
+      await this.xbridgeBSC.updateFeeDiscount(this.feeProxyBSC.address, 10000, 10000);
+      const xbridgeInfo = await this.xbridgeBSC.getXbridge(this.linkXbridgeId);
+      const xbridgeFeeInfo = await this.xbridgeBSC.getXbridgeFeeInfo(this.linkXbridgeId);
+      const balance = toBN(await this.deLinkToken.balanceOf(this.xbridgeBSC.address));
 
-      const supportedChainInfo = await this.debridgeBSC.getChainToConfig(ethChainId);
+      const supportedChainInfo = await this.xbridgeBSC.getChainToConfig(ethChainId);
       const fixedFee = supportedChainInfo.fixedNativeFee;
 
       let sendTx = await this.feeProxyBSC
         .connect(workerAccount)
-        .withdrawFee(debridgeInfo.tokenAddress, {
+        .withdrawFee(xbridgeInfo.tokenAddress, {
           value: fixedFee,
         });
 
@@ -3564,24 +3564,24 @@ contract("DeBridgeGate real pipeline mode", function () {
       // });
 
       this.burnEventDeLink = (
-        await this.debridgeBSC.queryFilter(this.debridgeBSC.filters.Sent(), receipt.blockNumber)
+        await this.xbridgeBSC.queryFilter(this.xbridgeBSC.filters.Sent(), receipt.blockNumber)
       )[0];
 
-      const newBalance = toBN(await this.deLinkToken.balanceOf(this.debridgeBSC.address));
+      const newBalance = toBN(await this.deLinkToken.balanceOf(this.xbridgeBSC.address));
       const diffBalance = balance.sub(newBalance);
-      const newDebridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(this.linkDebridgeId);
+      const newXbridgeFeeInfo = await this.xbridgeBSC.getXbridgeFeeInfo(this.linkXbridgeId);
       // console.log("diffBalance.toString() ",diffBalance.toString());
-      // console.log("debridgeFeeInfo.collectedFees ",debridgeFeeInfo.collectedFees.toString());
-      // console.log("debridgeFeeInfo.withdrawnFees ",debridgeFeeInfo.withdrawnFees.toString());
-      // console.log("newDebridgeFeeInfo.collectedFees ",newDebridgeFeeInfo.collectedFees.toString());
-      // console.log("newDebridgeFeeInfo.withdrawnFees ",newDebridgeFeeInfo.withdrawnFees.toString());
-      assert.equal(diffBalance.toString(), debridgeFeeInfo.collectedFees.toString());
-      assert.equal(0, debridgeFeeInfo.withdrawnFees.toString());
+      // console.log("xbridgeFeeInfo.collectedFees ",xbridgeFeeInfo.collectedFees.toString());
+      // console.log("xbridgeFeeInfo.withdrawnFees ",xbridgeFeeInfo.withdrawnFees.toString());
+      // console.log("newXbridgeFeeInfo.collectedFees ",newXbridgeFeeInfo.collectedFees.toString());
+      // console.log("newXbridgeFeeInfo.withdrawnFees ",newXbridgeFeeInfo.withdrawnFees.toString());
+      assert.equal(diffBalance.toString(), xbridgeFeeInfo.collectedFees.toString());
+      assert.equal(0, xbridgeFeeInfo.withdrawnFees.toString());
       assert.equal(
         0,
-        newDebridgeFeeInfo.collectedFees.sub(newDebridgeFeeInfo.withdrawnFees).toString()
+        newXbridgeFeeInfo.collectedFees.sub(newXbridgeFeeInfo.withdrawnFees).toString()
       );
-      assert.equal(diffBalance.toString(), newDebridgeFeeInfo.withdrawnFees.toString());
+      assert.equal(diffBalance.toString(), newXbridgeFeeInfo.withdrawnFees.toString());
       assert.equal(0, newBalance.toString());
     });
 
@@ -3593,7 +3593,7 @@ contract("DeBridgeGate real pipeline mode", function () {
 
       const balance = toBN(await this.linkToken.balanceOf(this.feeProxyETH.address));
       //   function claim(
-      //     bytes32 _debridgeId,
+      //     bytes32 _xbridgeId,
       //     uint256 _chainIdFrom,
       //     address _receiver,
       //     uint256 _amount,
@@ -3601,8 +3601,8 @@ contract("DeBridgeGate real pipeline mode", function () {
       //     bytes memory _signatures
       // )
 
-      let sendTx = await this.debridgeETH.claim(
-        currentBurnEvent.args.debridgeId,
+      let sendTx = await this.xbridgeETH.claim(
+        currentBurnEvent.args.xbridgeId,
         currentBurnEvent.args.amount,
         chainFrom,
         currentBurnEvent.args.receiver,
@@ -3626,18 +3626,18 @@ contract("DeBridgeGate real pipeline mode", function () {
     });
 
     it("should withdraw fee of ERC20 token (HECO network, deCake) if it is called by the worker", async function () {
-      await this.debridgeHECO.updateFeeDiscount(this.feeProxyHECO.address, 10000, 10000);
-      const debridgeInfo = await this.debridgeHECO.getDebridge(this.cakeDebridgeId);
-      const debridgeFeeInfo = await this.debridgeHECO.getDebridgeFeeInfo(this.cakeDebridgeId);
+      await this.xbridgeHECO.updateFeeDiscount(this.feeProxyHECO.address, 10000, 10000);
+      const xbridgeInfo = await this.xbridgeHECO.getXbridge(this.cakeXbridgeId);
+      const xbridgeFeeInfo = await this.xbridgeHECO.getXbridgeFeeInfo(this.cakeXbridgeId);
 
-      const supportedChainInfo = await this.debridgeHECO.getChainToConfig(ethChainId);
+      const supportedChainInfo = await this.xbridgeHECO.getChainToConfig(ethChainId);
       const fixedFee = supportedChainInfo.fixedNativeFee;
       // console.log(`fixedFee: ${fixedFee.toString()}`);
-      // console.log(`debridgeInfo.collectedFees: ${debridgeInfo.collectedFees.toString()}`);
+      // console.log(`xbridgeInfo.collectedFees: ${xbridgeInfo.collectedFees.toString()}`);
 
       let sendTx = await this.feeProxyHECO
         .connect(workerAccount)
-        .withdrawFee(debridgeInfo.tokenAddress, {
+        .withdrawFee(xbridgeInfo.tokenAddress, {
           value: fixedFee,
         });
 
@@ -3649,21 +3649,21 @@ contract("DeBridgeGate real pipeline mode", function () {
       //   return x.event == "Burnt"; //"AutoBurnt";
       // });
       this.burnEventDeCake = (
-        await this.debridgeHECO.queryFilter(this.debridgeHECO.filters.Sent(), receipt.blockNumber)
+        await this.xbridgeHECO.queryFilter(this.xbridgeHECO.filters.Sent(), receipt.blockNumber)
       )[0];
 
       // console.log(this.burnEventDeCake);
-      const newDebridgeFeeInfo = await this.debridgeHECO.getDebridgeFeeInfo(this.cakeDebridgeId);
+      const newXbridgeFeeInfo = await this.xbridgeHECO.getXbridgeFeeInfo(this.cakeXbridgeId);
       // console.log("diffBalance.toString() ",diffBalance.toString());
-      // console.log("debridgeInfo.collectedFees ",debridgeInfo.collectedFees.toString());
-      // console.log("debridgeInfo.withdrawnFees ",debridgeInfo.withdrawnFees.toString());
-      // console.log("newDebridgeInfo.collectedFees ",newDebridgeInfo.collectedFees.toString());
-      // console.log("newDebridgeInfo.withdrawnFees ",newDebridgeInfo.withdrawnFees.toString());
+      // console.log("xbridgeInfo.collectedFees ",xbridgeInfo.collectedFees.toString());
+      // console.log("xbridgeInfo.withdrawnFees ",xbridgeInfo.withdrawnFees.toString());
+      // console.log("newXbridgeInfo.collectedFees ",newXbridgeInfo.collectedFees.toString());
+      // console.log("newXbridgeInfo.withdrawnFees ",newXbridgeInfo.withdrawnFees.toString());
 
-      assert.equal(0, debridgeFeeInfo.withdrawnFees.toString());
+      assert.equal(0, xbridgeFeeInfo.withdrawnFees.toString());
       assert.equal(
         0,
-        newDebridgeFeeInfo.collectedFees.sub(newDebridgeFeeInfo.withdrawnFees).toString()
+        newXbridgeFeeInfo.collectedFees.sub(newXbridgeFeeInfo.withdrawnFees).toString()
       );
     });
 
@@ -3671,14 +3671,14 @@ contract("DeBridgeGate real pipeline mode", function () {
       let signatures = await submissionSignatures(bscWeb3, oracleKeys, this.burnEventDeCake.args.submissionId);
 
       let currentBurnEvent = this.burnEventDeCake;
-      let debridgeId = currentBurnEvent.args.debridgeId;
+      let xbridgeId = currentBurnEvent.args.xbridgeId;
       let chainFrom = hecoChainId;
 
-      const debridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(debridgeId);
+      const xbridgeFeeInfo = await this.xbridgeBSC.getXbridgeFeeInfo(xbridgeId);
       const balance = toBN(await this.cakeToken.balanceOf(this.feeProxyBSC.address));
 
-      let sendTx = await this.debridgeBSC.claim(
-        debridgeId,
+      let sendTx = await this.xbridgeBSC.claim(
+        xbridgeId,
         currentBurnEvent.args.amount,
         chainFrom,
         currentBurnEvent.args.receiver,
@@ -3704,11 +3704,11 @@ contract("DeBridgeGate real pipeline mode", function () {
       // console.log(ReceivedTransferFee);
       // console.log("amount " + ReceivedTransferFee.args.amount.toString());
 
-      const newDebridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(debridgeId);
+      const newXbridgeFeeInfo = await this.xbridgeBSC.getXbridgeFeeInfo(xbridgeId);
       const newBalance = toBN(await this.cakeToken.balanceOf(this.feeProxyBSC.address));
 
       // console.log("cakeToken "+ this.cakeToken.address);
-      // console.log("this.debridgeBSC "+ this.debridgeBSC.address);
+      // console.log("this.xbridgeBSC "+ this.xbridgeBSC.address);
       // console.log("balance"+balance.toString());
       // console.log("+amount "+ currentBurnEvent.args.amount.toString());
       // console.log("newBalance.toString() "+newBalance.toString());
@@ -3716,34 +3716,34 @@ contract("DeBridgeGate real pipeline mode", function () {
       // console.log("Proxy balance  "+(await this.cakeToken.balanceOf(this.callProxy.address)).toString());
       // console.log("Proxy fee balance  "+(await this.cakeToken.balanceOf(this.feeProxyBSC.address)).toString());
 
-      //Balnce cake on debridgeGate will be the same, Cake only transfered to CallProxy and back to collected fee
+      //Balnce cake on xbridgeGate will be the same, Cake only transfered to CallProxy and back to collected fee
       assert.equal(currentBurnEvent.args.amount.toString(), newBalance.sub(balance).toString());
 
       assert.equal(
-        debridgeFeeInfo.collectedFees.toString(),
-        newDebridgeFeeInfo.collectedFees.toString()
+        xbridgeFeeInfo.collectedFees.toString(),
+        newXbridgeFeeInfo.collectedFees.toString()
       );
 
       assert.equal(
-        debridgeFeeInfo.withdrawnFees.toString(),
-        newDebridgeFeeInfo.withdrawnFees.toString()
+        xbridgeFeeInfo.withdrawnFees.toString(),
+        newXbridgeFeeInfo.withdrawnFees.toString()
       );
     });
 
     it("should withdraw fee of ERC20 token (ETH network, Link) if it is called by the worker", async function () {
-      await this.debridgeETH.updateFeeDiscount(this.feeProxyETH.address, 10000, 10000);
-      const debridgeInfo = await this.debridgeETH.getDebridge(this.linkDebridgeId);
-      const debridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(this.linkDebridgeId);
-      const balance = toBN(await this.linkToken.balanceOf(this.debridgeETH.address));
+      await this.xbridgeETH.updateFeeDiscount(this.feeProxyETH.address, 10000, 10000);
+      const xbridgeInfo = await this.xbridgeETH.getXbridge(this.linkXbridgeId);
+      const xbridgeFeeInfo = await this.xbridgeETH.getXbridgeFeeInfo(this.linkXbridgeId);
+      const balance = toBN(await this.linkToken.balanceOf(this.xbridgeETH.address));
 
-      const supportedChainInfo = await this.debridgeETH.getChainToConfig(ethChainId);
+      const supportedChainInfo = await this.xbridgeETH.getChainToConfig(ethChainId);
       const fixedFee = supportedChainInfo.fixedNativeFee;
 
       const balanceETHTreasury = toBN(await this.wethETH.balanceOf(treasury));
 
       let sendTx = await this.feeProxyETH
         .connect(workerAccount)
-        .withdrawFee(debridgeInfo.tokenAddress, {
+        .withdrawFee(xbridgeInfo.tokenAddress, {
           value: fixedFee,
         });
 
@@ -3755,15 +3755,15 @@ contract("DeBridgeGate real pipeline mode", function () {
       const newBalanceETHTreasury = toBN(await this.wethETH.balanceOf(treasury));
       // console.log("balanceETHTreasury "+balanceETHTreasury.toString());
       // console.log("newBalanceETHTreasury "+newBalanceETHTreasury.toString());
-      const newBalance = toBN(await this.linkToken.balanceOf(this.debridgeETH.address));
+      const newBalance = toBN(await this.linkToken.balanceOf(this.xbridgeETH.address));
       const diffBalance = balance.sub(newBalance);
-      const newDebridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(this.linkDebridgeId);
+      const newXbridgeFeeInfo = await this.xbridgeETH.getXbridgeFeeInfo(this.linkXbridgeId);
 
       assert.ok(newBalanceETHTreasury.gt(balanceETHTreasury));
-      // assert.equal(diffBalance.toString(), debridgeInfo.withdrawnFees.toString());
-      assert.equal(0, debridgeFeeInfo.withdrawnFees.toString());
-      // assert.equal(0, newDebridgeInfo.collectedFees.sub(newDebridgeInfo.withdrawnFees).toString());
-      assert.equal(diffBalance.toString(), newDebridgeFeeInfo.withdrawnFees.toString());
+      // assert.equal(diffBalance.toString(), xbridgeInfo.withdrawnFees.toString());
+      assert.equal(0, xbridgeFeeInfo.withdrawnFees.toString());
+      // assert.equal(0, newXbridgeInfo.collectedFees.sub(newXbridgeInfo.withdrawnFees).toString());
+      assert.equal(diffBalance.toString(), newXbridgeFeeInfo.withdrawnFees.toString());
       // assert.equal(0, newBalance.toString());
     });
 
@@ -3781,19 +3781,19 @@ contract("DeBridgeGate real pipeline mode", function () {
       );
 
       await expectRevert(
-        this.debridgeBSC.connect(bobAccount).withdrawFee(this.linkDebridgeId),
+        this.xbridgeBSC.connect(bobAccount).withdrawFee(this.linkXbridgeId),
         "FeeProxyBadRole()"
       );
     });
 
     // it("should reject withdrawing fees if the token not from current chain", async function () {
-    //   const fakeDebridgeId = await this.debridgeBSC.getDebridgeId(
+    //   const fakeXbridgeId = await this.xbridgeBSC.getXbridgeId(
     //     999,
     //     "0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c"
     //   );
     //   await expectRevert(
     //     this.feeProxyBSC.connect(workerAccount).withdrawFee("0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c"),
-    //     "DebridgeNotFound()"
+    //     "XbridgeNotFound()"
     //   );
     // });
   });
@@ -3812,13 +3812,13 @@ contract("DeBridgeGate real pipeline mode", function () {
       //flashFeeBps 0.1%
       await this.cakeToken.mint(flash.address, toBN(toWei("10")));
       const chainIdTo = bscChainId;
-      const supportedChainInfo = await this.debridgeETH.getChainToConfig(chainIdTo);
+      const supportedChainInfo = await this.xbridgeETH.getChainToConfig(chainIdTo);
 
-      await this.cakeToken.approve(this.debridgeETH.address, amount, {
+      await this.cakeToken.approve(this.xbridgeETH.address, amount, {
         from: alice,
       });
-      //We need to create debridge
-      await this.debridgeETH.send(
+      //We need to create xbridge
+      await this.xbridgeETH.send(
         this.cakeToken.address,
         amount,
         chainIdTo,
@@ -3836,65 +3836,65 @@ contract("DeBridgeGate real pipeline mode", function () {
 
     it("flash increases balances and counters of received funds", async function () {
       const amount = toBN(1000);
-      await this.debridgeETH.updateFlashFee(10); //set 0.1%
-      const flashFeeBps = await this.debridgeETH.flashFeeBps();
+      await this.xbridgeETH.updateFlashFee(10); //set 0.1%
+      const flashFeeBps = await this.xbridgeETH.flashFeeBps();
       const fee = amount.mul(flashFeeBps).div(BPS);
-      const chainId = await this.debridgeETH.getChainId();
-      const debridgeId = await this.debridgeETH.getDebridgeId(chainId, this.cakeToken.address);
-      const debridge = await this.debridgeETH.getDebridge(debridgeId);
-      const debridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(debridgeId);
-      const paidBefore = debridgeFeeInfo.collectedFees;
+      const chainId = await this.xbridgeETH.getChainId();
+      const xbridgeId = await this.xbridgeETH.getXbridgeId(chainId, this.cakeToken.address);
+      const xbridge = await this.xbridgeETH.getXbridge(xbridgeId);
+      const xbridgeFeeInfo = await this.xbridgeETH.getXbridgeFeeInfo(xbridgeId);
+      const paidBefore = xbridgeFeeInfo.collectedFees;
       const balanceReceiverBefore = await this.cakeToken.balanceOf(alice);
 
       await flash.flash(
-        this.debridgeETH.address,
+        this.xbridgeETH.address,
         this.cakeToken.address,
         alice,
         amount,
         false
       );
 
-      const newDebridge = await this.debridgeETH.getDebridge(debridgeId);
-      const newDebridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(debridgeId);
-      const paidAfter = newDebridgeFeeInfo.collectedFees;
+      const newXbridge = await this.xbridgeETH.getXbridge(xbridgeId);
+      const newXbridgeFeeInfo = await this.xbridgeETH.getXbridgeFeeInfo(xbridgeId);
+      const paidAfter = newXbridgeFeeInfo.collectedFees;
       const balanceReceiverAfter = await this.cakeToken.balanceOf(alice);
 
       expect("10").to.equal(flashFeeBps.toString());
-      expect(toBN(paidBefore).add(fee)).to.equal(toBN(newDebridgeFeeInfo.collectedFees));
+      expect(toBN(paidBefore).add(fee)).to.equal(toBN(newXbridgeFeeInfo.collectedFees));
       expect(toBN(balanceReceiverBefore).add(amount)).to.equal(toBN(balanceReceiverAfter));
     });
 
     it("flash reverts if not profitable", async function () {
       await expect(
-        flash.flash(this.debridgeETH.address, this.cakeToken.address, alice, 1000, true)
+        flash.flash(this.xbridgeETH.address, this.cakeToken.address, alice, 1000, true)
       ).to.be.revertedWith("FlashFeeNotPaid()");
     });
   });
 
   context("Test calculating ids", () => {
-    it("should has same debridgeId", async function() {
+    it("should has same xbridgeId", async function() {
       const chainId = 100;
       const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
-      const debridgeId = await this.debridgeETH.getDebridgeId(chainId, tokenAddress);
+      const xbridgeId = await this.xbridgeETH.getXbridgeId(chainId, tokenAddress);
 
-      const debridgeIdETH = await this.debridgeETH.getDebridgeId(chainId, tokenAddress);
-      const debridgeIdBSC = await this.debridgeBSC.getDebridgeId(chainId, tokenAddress);
+      const xbridgeIdETH = await this.xbridgeETH.getXbridgeId(chainId, tokenAddress);
+      const xbridgeIdBSC = await this.xbridgeBSC.getXbridgeId(chainId, tokenAddress);
 
-      assert.equal(debridgeId, debridgeIdETH);
-      assert.equal(debridgeIdETH, debridgeIdBSC);
+      assert.equal(xbridgeId, xbridgeIdETH);
+      assert.equal(xbridgeIdETH, xbridgeIdBSC);
 
-      const calculatedDebridgeId = ethers.utils.solidityKeccak256(['uint256', 'bytes'], [chainId, tokenAddress]);
-      assert.equal(debridgeId, calculatedDebridgeId);
+      const calculatedXbridgeId = ethers.utils.solidityKeccak256(['uint256', 'bytes'], [chainId, tokenAddress]);
+      assert.equal(xbridgeId, calculatedXbridgeId);
     })
 
     it("should has same deployId", async function() {
-      const debridgeId = "0x8ee3dbcdef0876763610fbdbed3ff2f4c14425bc81d10df7378e47a83e42b253";
+      const xbridgeId = "0x8ee3dbcdef0876763610fbdbed3ff2f4c14425bc81d10df7378e47a83e42b253";
       const name = "TEST_TOKEN";
       const symbol = "TEST";
       const decimals = 18;
-      const deployIdETH = await this.debridgeETH.getDeployId(debridgeId, name, symbol, decimals);
-      const deployIdBSC = await this.debridgeBSC.getDeployId(debridgeId, name, symbol, decimals);
-      const DEPLOY_PREFIX = await this.debridgeETH.DEPLOY_PREFIX();
+      const deployIdETH = await this.xbridgeETH.getDeployId(xbridgeId, name, symbol, decimals);
+      const deployIdBSC = await this.xbridgeBSC.getDeployId(xbridgeId, name, symbol, decimals);
+      const DEPLOY_PREFIX = await this.xbridgeETH.DEPLOY_PREFIX();
       // assert.equal(deployIdETH, deployIdBSC);
       const nameKeccak = ethers.utils.solidityKeccak256(['string'], [name]);
       const symbolKeccak = ethers.utils.solidityKeccak256(['string'], [symbol]);
@@ -3902,7 +3902,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       //console.log("symbolKeccak", symbolKeccak);
       const calculatedDeployId = ethers.utils.solidityKeccak256(
         ['uint256', 'bytes32', 'bytes32', 'bytes32', 'uint8'],
-        [DEPLOY_PREFIX, debridgeId, nameKeccak, symbolKeccak, decimals]);
+        [DEPLOY_PREFIX, xbridgeId, nameKeccak, symbolKeccak, decimals]);
 
       console.log("calculatedDeployId", calculatedDeployId);
       assert.equal(deployIdETH, calculatedDeployId);

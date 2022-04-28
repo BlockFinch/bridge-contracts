@@ -11,7 +11,7 @@ library Flags {
     uint256 public constant REVERT_IF_EXTERNAL_FAIL = 1;
     /// @dev Flag to call proxy with a sender contract
     uint256 public constant PROXY_WITH_SENDER = 2;
-    /// @dev Data is hash in DeBridgeGate send method
+    /// @dev Data is hash in XDCBridgeGate send method
     uint256 public constant SEND_HASHED_DATA = 3;
     /// @dev First 24 bytes from data is gas limit for external call
     uint256 public constant SEND_EXTERNAL_CALL_GAS_LIMIT = 4;

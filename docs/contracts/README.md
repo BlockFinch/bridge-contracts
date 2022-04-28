@@ -2,25 +2,25 @@
 
 ### Interfaces
 * [ICallProxy](interfaces/ICallProxy.md)
-* [IDeBridgeGate](interfaces/IDeBridgeGate.md)
-* [IDeBridgeToken](interfaces/IDeBridgeToken.md)
-* [IDeBridgeTokenDeployer](interfaces/IDeBridgeTokenDeployer.md)
 * [IOraclesManager](interfaces/IOraclesManager.md)
 * [ISignatureVerifier](interfaces/ISignatureVerifier.md)
 * [IWethGate](interfaces/IWethGate.md)
+* [IXDCBridgeGate](interfaces/IXDCBridgeGate.md)
+* [IXDCBridgeToken](interfaces/IXDCBridgeToken.md)
+* [IXDCBridgeTokenDeployer](interfaces/IXDCBridgeTokenDeployer.md)
 
 ### Libraries
 * [Flags](libraries/Flags.md)
 
 ### Periphery
 * [CallProxy](periphery/CallProxy.md)
-* [DeBridgeToken](periphery/DeBridgeToken.md)
-* [DeBridgeTokenProxy](periphery/DeBridgeTokenProxy.md)
 * [SimpleFeeProxy](periphery/SimpleFeeProxy.md)
+* [XDCBridgeToken](periphery/XDCBridgeToken.md)
+* [XDCBridgeTokenProxy](periphery/XDCBridgeTokenProxy.md)
 
 ### Transfers
-* [DeBridgeGate](transfers/DeBridgeGate.md)
-* [DeBridgeTokenDeployer](transfers/DeBridgeTokenDeployer.md)
 * [OraclesManager](transfers/OraclesManager.md)
 * [SignatureVerifier](transfers/SignatureVerifier.md)
 * [WethGate](transfers/WethGate.md)
+* [XDCBridgeGate](transfers/XDCBridgeGate.md)
+* [XDCBridgeTokenDeployer](transfers/XDCBridgeTokenDeployer.md)

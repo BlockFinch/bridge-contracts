@@ -7,10 +7,10 @@ import {
     abi as IncrementorAbi
 } from "../../../artifacts/contracts/examples/Incrementor.sol/Incrementor.json";
 import {
-    abi as DeBridgeGateAbi
-} from "../../../artifacts/contracts/examples/forkedInterfaces/IDeBridgeGate.sol/IDeBridgeGate.json";
+    abi as XDCBridgeGateAbi
+} from "../../../artifacts/contracts/examples/forkedInterfaces/IXDCBridgeGate.sol/IXDCBridgeGate.json";
 import {parseEther} from "ethers/lib/utils";
-import {IDeBridgeGateInterface} from "../../../typechain-types/IDeBridgeGate";
+import {IXDCBridgeGateInterface} from "../../../typechain-types/IXDCBridgeGate";
 import {Log} from "hardhat-deploy/dist/types";
 import {LogDescription} from "@ethersproject/abi";
 
@@ -32,12 +32,12 @@ const main = async () => {
     const {submissionId} = sentLogDescription.args;
 
     console.log(`Submission id: ${submissionId}`);
-    console.log(`Url: https://testnet.debridge.finance/transaction?tx=${tx.hash}&chainId=${FROM_CHAIN_ID}`);
+    console.log(`Url: https://testnet.xbridge.finance/transaction?tx=${tx.hash}&chainId=${FROM_CHAIN_ID}`);
 
 }
 
 async function getSentEvent(receipt: ContractReceipt): Promise<LogDescription> {
-    const deBridgeGateInterface = new utils.Interface(DeBridgeGateAbi) as IDeBridgeGateInterface;
+    const deBridgeGateInterface = new utils.Interface(XDCBridgeGateAbi) as IXDCBridgeGateInterface;
     const toLogDescription = (log: Log): LogDescription | null => {
         try {
             return deBridgeGateInterface.parseLog(log);
